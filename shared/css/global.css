@@ -215,6 +215,7 @@ textarea:focus {
 .form-row {
   display: flex;
   gap: 0.9rem;
+  flex-direction: column;
 }
 
 .form-row .form-field {
