@@ -1,0 +1,26 @@
+<article class="hotel-card" data-hotel-id="{{id}}">
+  <div class="hotel-card-image-wrapper">
+    <img src="{{image}}" alt="{{name}}" class="hotel-card-image" />
+    <div class="hotel-card-badge">
+      ★ {{rating}}
+      <span class="badge">{{location}}</span>
+    </div>
+  </div>
+  <div class="hotel-card-body">
+    <h3 class="hotel-card-name">{{name}}</h3>
+    <p class="hotel-card-location">{{shortDescription}}</p>
+    <div class="hotel-card-meta">
+      <div class="hotel-card-price">
+        {{price}}
+        <span>/ night</span>
+      </div>
+      <div class="hotel-card-meta-right text-muted">
+        <span>{{rating}}★</span>
+      </div>
+    </div>
+    <div class="hotel-card-actions">
+      <button class="btn btn-outline btn-sm btn-view-detail" type="button">View details</button>
+      <button class="btn btn-gold btn-sm btn-book-now" type="button">Book now</button>
+    </div>
+  </div>
+</article>

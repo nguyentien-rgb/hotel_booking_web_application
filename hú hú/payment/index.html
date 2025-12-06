@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Payment — Luxury Hotel Booking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../shared/css/global.css" />
+    <link rel="stylesheet" href="../shared/css/dark-mode.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app-header"></div>
+
+    <main class="page">
+      <div class="container">
+        <header class="page-header">
+          <h1 class="page-title">Payment</h1>
+          <p class="page-subtitle">
+            Choose a payment method and complete your luxury booking.
+          </p>
+        </header>
+
+        <section class="payment-layout">
+          <div id="payment-summary" class="card card-soft payment-summary">
+            <!-- filled by JS -->
+          </div>
+          <div class="card payment-form-card">
+            <form id="payment-form" class="form-vertical">
+              <div class="form-field">
+                <label>Payment method</label>
+                <div class="payment-methods">
+                  <label class="payment-option">
+                    <input type="radio" name="payment-method" value="card" checked />
+                    <span>Credit card</span>
+                  </label>
+                  <label class="payment-option">
+                    <input type="radio" name="payment-method" value="qr" />
+                    <span>QR Code</span>
+                  </label>
+                  <label class="payment-option">
+                    <input type="radio" name="payment-method" value="wallet" />
+                    <span>Momo / ZaloPay</span>
+                  </label>
+                </div>
+              </div>
+
+              <div id="card-fields">
+                <div class="form-field">
+                  <label for="card-name">Name on card</label>
+                  <input id="card-name" type="text" />
+                </div>
+                <div class="form-field">
+                  <label for="card-number">Card number</label>
+                  <input id="card-number" type="text" maxlength="19" placeholder="xxxx xxxx xxxx xxxx" />
+                </div>
+                <div class="form-row">
+                  <div class="form-field">
+                    <label for="card-expiry">Expiry (MM/YY)</label>
+                    <input id="card-expiry" type="text" maxlength="5" placeholder="08/28" />
+                  </div>
+                  <div class="form-field">
+                    <label for="card-cvv">CVV</label>
+                    <input id="card-cvv" type="password" maxlength="3" />
+                  </div>
+                </div>
+              </div>
+
+              <div id="qr-info" class="payment-alt hidden">
+                <p class="text-muted" style="font-size: 0.9rem">
+                  Scan the QR code with your banking app. This is a mock UI placeholder.
+                </p>
+                <div class="qr-placeholder"></div>
+              </div>
+
+              <div id="wallet-info" class="payment-alt hidden">
+                <p class="text-muted" style="font-size: 0.9rem">
+                  You will be redirected to Momo / ZaloPay (mock). Use demo credentials to complete.
+                </p>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn btn-outline" id="payment-back-btn">
+                  Back to booking
+                </button>
+                <button type="submit" class="btn btn-gold" id="payment-submit-btn">
+                  Pay now
+                </button>
+              </div>
+              <div id="payment-status" class="payment-status"></div>
+            </form>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div id="app-footer"></div>
+
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/data.js"></script>
+    <script src="../shared/js/router.js"></script>
+    <script src="../shared/js/render.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

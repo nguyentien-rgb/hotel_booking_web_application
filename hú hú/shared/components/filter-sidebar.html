@@ -1,0 +1,60 @@
+<aside class="card" id="filter-sidebar">
+  <h3 style="margin-top: 0; margin-bottom: 0.8rem">Filters</h3>
+  <p class="text-muted" style="font-size: 0.85rem; margin-top: 0">
+    Refine your stay with luxury filters.
+  </p>
+
+  <div class="form-field">
+    <label for="filter-location">Location</label>
+    <select id="filter-location">
+      <option value="">All</option>
+      <option value="Hà Nội">Hà Nội</option>
+      <option value="Hồ Chí Minh">Hồ Chí Minh</option>
+      <option value="Đà Nẵng">Đà Nẵng</option>
+      <option value="Nha Trang">Nha Trang</option>
+      <option value="Phú Quốc">Phú Quốc</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <div class="form-field">
+      <label for="filter-min-price">Min price</label>
+      <input type="number" id="filter-min-price" min="0" />
+    </div>
+    <div class="form-field">
+      <label for="filter-max-price">Max price</label>
+      <input type="number" id="filter-max-price" min="0" />
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label for="filter-rating">Rating</label>
+    <select id="filter-rating">
+      <option value="">Any</option>
+      <option value="4">4★+</option>
+      <option value="4.5">4.5★+</option>
+    </select>
+  </div>
+
+  <div class="form-field">
+    <label for="filter-sort">Sort by</label>
+    <select id="filter-sort">
+      <option value="">Recommended</option>
+      <option value="price-asc">Price: low to high</option>
+      <option value="price-desc">Price: high to low</option>
+      <option value="rating-desc">Rating</option>
+    </select>
+  </div>
+
+  <button id="filter-apply-btn" class="btn btn-gold btn-full" type="button">
+    Apply filters
+  </button>
+  <button
+    id="filter-reset-btn"
+    class="btn btn-outline btn-full"
+    type="button"
+    style="margin-top: 0.4rem"
+  >
+    Reset
+  </button>
+</aside>

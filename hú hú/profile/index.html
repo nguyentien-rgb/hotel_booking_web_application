@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>My Profile — Luxury Hotel Booking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../shared/css/global.css" />
+    <link rel="stylesheet" href="../shared/css/dark-mode.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app-header"></div>
+
+    <main class="page">
+      <div class="container">
+        <section class="profile-layout">
+          <div class="card card-soft profile-main">
+            <h1 class="page-title">My profile</h1>
+            <p class="page-subtitle">Manage your account and view your recent luxury stays.</p>
+
+            <div id="profile-user-info" class="profile-user-info">
+              <!-- filled by JS -->
+            </div>
+            <button class="btn btn-outline" id="profile-logout-btn">Logout</button>
+          </div>
+
+          <div class="card profile-bookings">
+            <h3 style="margin-top: 0">Recent bookings</h3>
+            <div id="profile-booking-list" class="profile-booking-list">
+              <!-- filled by JS -->
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div id="app-footer"></div>
+
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/data.js"></script>
+    <script src="../shared/js/router.js"></script>
+    <script src="../shared/js/render.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

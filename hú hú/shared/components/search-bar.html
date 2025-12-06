@@ -1,0 +1,45 @@
+<form id="search-bar-form" class="card card-soft" autocomplete="off">
+  <div class="form-row">
+    <div class="form-field">
+      <label for="search-name">Hotel name</label>
+      <input
+        type="text"
+        id="search-name"
+        placeholder="Search by hotel name..."
+        name="name"
+      />
+    </div>
+    <div class="form-field">
+      <label for="search-location">Location</label>
+      <select id="search-location" name="location">
+        <option value="">All locations</option>
+        <option value="Hà Nội">Hà Nội</option>
+        <option value="Hồ Chí Minh">Hồ Chí Minh</option>
+        <option value="Đà Nẵng">Đà Nẵng</option>
+        <option value="Nha Trang">Nha Trang</option>
+        <option value="Phú Quốc">Phú Quốc</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-field">
+      <label for="search-min-price">Min price</label>
+      <input type="number" id="search-min-price" min="0" placeholder="e.g. 1000000" />
+    </div>
+    <div class="form-field">
+      <label for="search-max-price">Max price</label>
+      <input type="number" id="search-max-price" min="0" placeholder="e.g. 5000000" />
+    </div>
+    <div class="form-field">
+      <label for="search-rating">Minimum rating</label>
+      <select id="search-rating">
+        <option value="">Any</option>
+        <option value="4">4★+</option>
+        <option value="4.5">4.5★+</option>
+      </select>
+    </div>
+    <div class="form-field" style="align-self: flex-end">
+      <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+  </div>
+</form>

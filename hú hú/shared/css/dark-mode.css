@@ -1,0 +1,27 @@
+body.dark-theme {
+  --color-bg: #050509;
+  --color-surface: #111827;
+  --color-surface-soft: #1f2933;
+  --color-text: #f9fafb;
+  --color-text-muted: #9ca3af;
+  --color-border: #374151;
+  --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.8);
+  background: radial-gradient(circle at top, #400c3f 0, #57085c 60%, #710894 100%);
+}
+
+body.dark-theme .site-header {
+  background: linear-gradient(
+    90deg,
+    rgba(202, 36, 116, 0.96),
+    rgba(102, 8, 112, 0.98),
+    rgba(0, 0, 0, 0.96)
+  );
+}
+
+body.dark-theme .site-footer {
+  background: #020617;
+}
+
+body.dark-theme .card-soft {
+  background: linear-gradient(145deg, #1f2933, #020617);
+}

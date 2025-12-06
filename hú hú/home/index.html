@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Luxury Hotel Booking — Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../shared/css/global.css" />
+    <link rel="stylesheet" href="../shared/css/dark-mode.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app-header"></div>
+
+    <main class="page">
+      <div class="container">
+        <section class="home-hero card-soft">
+          <div class="home-hero-text">
+            <h1 class="home-hero-title">Book your next luxury stay</h1>
+            <p class="home-hero-subtitle">
+              Curated 5★ hotels across Vietnam with golden service and black-tie style.
+            </p>
+            <form id="home-search-form" class="home-search-form" autocomplete="off">
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="home-search-input">Where would you like to stay?</label>
+                  <input
+                    type="text"
+                    id="home-search-input"
+                    placeholder="Search by hotel name or destination"
+                  />
+                </div>
+                <div class="form-field">
+                  <label>&nbsp;</label>
+                  <button class="btn btn-gold btn-full" type="submit">Search hotels</button>
+                </div>
+              </div>
+            </form>
+            <p class="home-hero-meta text-muted">
+              Handpicked stays in Hà Nội, Đà Nẵng, Nha Trang, Phú Quốc and more.
+            </p>
+          </div>
+          <div class="home-hero-image">
+            <div class="home-hero-photo"></div>
+            <div class="home-hero-stats card">
+              <div>
+                <div class="stat-number">250+</div>
+                <div class="stat-label">Luxury rooms</div>
+              </div>
+              <div>
+                <div class="stat-number">4.8★</div>
+                <div class="stat-label">Average rating</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="home-section">
+          <div class="home-section-header">
+            <h2 class="home-section-title">Featured stays</h2>
+            <p class="home-section-subtitle text-muted">
+              Explore some of our most loved hotels this week.
+            </p>
+          </div>
+          <div id="home-hotel-list" class="grid grid-3"></div>
+        </section>
+      </div>
+    </main>
+
+    <div id="app-footer"></div>
+
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/data.js"></script>
+    <script src="../shared/js/router.js"></script>
+    <script src="../shared/js/render.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

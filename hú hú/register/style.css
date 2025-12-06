@@ -1,0 +1,15 @@
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 180px);
+}
+
+.auth-card {
+  max-width: 420px;
+  width: 100%;
+}
+
+.auth-form {
+  margin-top: 0.8rem;
+}

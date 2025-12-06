@@ -1,0 +1,30 @@
+.search-bar-section {
+  margin-bottom: 1.2rem;
+}
+
+.search-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+  gap: 1.2rem;
+  align-items: flex-start;
+}
+
+.search-results-header {
+  margin-bottom: 0.5rem;
+}
+
+.search-sidebar {
+  position: sticky;
+  top: 88px;
+}
+
+@media (max-width: 900px) {
+  .search-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .search-sidebar {
+    order: -1;
+    position: static;
+  }
+}
