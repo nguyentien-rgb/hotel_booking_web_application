@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+/*document.addEventListener("DOMContentLoaded", function () {
   Render.initSharedLayout("../shared", "");
   initPaymentPage();
 });
@@ -166,4 +166,121 @@ function processPayment(hotel, draft, method, statusEl) {
       Router.goToProfile();
     }, 1500);
   }, 1500);
+}
+*/
+// /payment/script.js
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.Render && Render.initSharedLayout) {
+    Render.initSharedLayout("../shared", "payment");
+  }
+  initPaymentPage();
+});
+
+function getBookingDraft() {
+  try {
+    const raw = localStorage.getItem("booking_draft");
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.warn("Không parse được booking_draft từ localStorage:", e);
+    return null;
+  }
+}
+
+async function initPaymentPage() {
+  const summaryEl = document.getElementById("payment-summary");
+  const form = document.getElementById("payment-form");
+  const statusEl = document.getElementById("payment-status");
+
+  if (!summaryEl || !form || !statusEl) {
+    console.warn("Thiếu #payment-summary / #payment-form / #payment-status");
+    return;
+  }
+
+  const draft = getBookingDraft();
+  if (!draft) {
+    summaryEl.innerHTML =
+      "<p>No booking information found. Please select a hotel and booking again.</p>";
+    form.style.display = "none";
+    return;
+  }
+
+  // Hiển thị tóm tắt booking
+  summaryEl.innerHTML = `
+    <h2>Booking summary</h2>
+    <p><strong>Hotel:</strong> ${localStorage.getItem("selected_hotel_name") ||
+      ""}</p>
+    <p><strong>Check-in:</strong> ${draft.checkIn}</p>
+    <p><strong>Check-out:</strong> ${draft.checkOut}</p>
+    <p><strong>Guests:</strong> ${draft.guests}</p>
+    <p><strong>Nights:</strong> ${draft.nights}</p>
+    <p><strong>Total:</strong> ${Number(draft.total).toLocaleString()} VND</p>
+  `;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    statusEl.textContent = "";
+    statusEl.classList.remove("success", "error");
+
+    // Lấy phương thức thanh toán
+    const methodInput = form.querySelector(
+      "input[name='paymentMethod']:checked"
+    );
+    const paymentMethod = methodInput ? methodInput.value : null;
+
+    // Lấy thông tin thẻ (nếu user chọn credit card)
+    const cardHolder = form.querySelector("#card-holder");
+    const cardNumber = form.querySelector("#card-number");
+    const expiry = form.querySelector("#card-expiry");
+    const cvv = form.querySelector("#card-cvv");
+
+    // Validate đơn giản
+    if (!paymentMethod) {
+      statusEl.textContent = "Please select a payment method.";
+      statusEl.classList.add("error");
+      return;
+    }
+
+    if (paymentMethod === "card") {
+      if (
+        !cardHolder.value.trim() ||
+        !cardNumber.value.trim() ||
+        !expiry.value.trim() ||
+        !cvv.value.trim()
+      ) {
+        statusEl.textContent =
+          "Please fill in all credit card information.";
+        statusEl.classList.add("error");
+        return;
+      }
+    }
+
+    // Gửi booking lên backend
+    statusEl.textContent = "Processing payment...";
+    try {
+      const payload = {
+        userId: null, // sau này có login thì truyền id user
+        hotelId: Number(draft.hotelId || localStorage.getItem("selected_hotel_id")),
+        checkIn: draft.checkIn,
+        checkOut: draft.checkOut,
+        guests: Number(draft.guests),
+        nights: Number(draft.nights),
+        total: Number(draft.total),
+        paymentMethod,
+      };
+
+      await Api.createBooking(payload);
+
+      statusEl.textContent = "Payment successful! Your booking is confirmed.";
+      statusEl.classList.add("success");
+
+      // Xoá draft, có thể redirect sang trang profile / booking history
+      localStorage.removeItem("booking_draft");
+      // window.location.href = "../profile/index.html";
+    } catch (err) {
+      console.error("Lỗi khi tạo booking:", err);
+      statusEl.textContent = "Payment failed: " + err.message;
+      statusEl.classList.add("error");
+    }
+  });
 }
