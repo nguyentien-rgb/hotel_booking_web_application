@@ -72,6 +72,84 @@ app.get("/api/hotels/:id", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+// POST tạo booking sau khi thanh toán
+app.post("/api/bookings", async (req, res) => {
+  try {
+    const {
+      userId,
+      hotelId,
+      checkIn,
+      checkOut,
+      guests,
+      nights,
+      total,
+      paymentMethod,
+    } = req.body;
+
+    if (!hotelId || !checkIn || !checkOut || !guests || !nights || !total) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const [hotelRows] = await pool.query(
+      "SELECT id FROM hotels WHERE id = ?",
+      [hotelId]
+    );
+    if (!hotelRows.length) {
+      return res.status(400).json({ error: "Hotel not found" });
+    }
+
+    const [result] = await pool.query(
+      `INSERT INTO bookings
+       (user_id, hotel_id, check_in, check_out, guests, nights, total, payment_method)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        userId || null,
+        hotelId,
+        checkIn,
+        checkOut,
+        guests,
+        nights,
+        total,
+        paymentMethod || null,
+      ]
+    );
+
+    res.status(201).json({
+      success: true,
+      bookingId: result.insertId,
+    });
+  } catch (err) {
+    console.error("Error /api/bookings:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// GET danh sách bookings (nếu có ?userId=... thì lọc theo user)
+app.get("/api/bookings", async (req, res) => {
+  try {
+    const userId = req.query.userId ? Number(req.query.userId) : null;
+
+    let sql =
+      `SELECT b.*, h.name AS hotel_name, h.location
+       FROM bookings b
+       JOIN hotels h ON b.hotel_id = h.id`;
+    const params = [];
+
+    if (userId) {
+      sql += " WHERE b.user_id = ?";
+      params.push(userId);
+    }
+
+    sql += " ORDER BY b.created_at DESC";
+
+    const [rows] = await pool.query(sql, params);
+    res.json(rows);
+  } catch (err) {
+    console.error("Error /api/bookings (GET):", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 
 app.listen(PORT, () => {
   console.log(`✅ Backend listening at http://localhost:${PORT}`);

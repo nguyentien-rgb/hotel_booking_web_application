@@ -178,7 +178,8 @@ async function initSearchPage() {
 
   // 2. Lấy dữ liệu hotel từ backend (MySQL qua Node)
   try {
-    SEARCH_HOTELS = await Api.fetchHotels(); // 🔥 thay cho window.HOTELS fake
+    SEARCH_HOTELS = await Api.fetchHotels(); //  thay cho window.HOTELS fake
+    populateLocationOptions(SEARCH_HOTELS);
   } catch (err) {
     console.error("Lỗi khi load hotels cho search:", err);
     const metaEl = document.getElementById("search-results-meta");
@@ -232,6 +233,39 @@ function loadFilterSidebar() {
     });
 }
 
+function populateLocationOptions(hotels) {
+  // Lấy danh sách location duy nhất
+  const locations = Array.from(
+    new Set(
+      hotels
+        .map((h) => h.location)
+        .filter(Boolean) // bỏ null/undefined/""
+    )
+  ).sort();
+
+  const filterSelect = document.getElementById("filter-location");
+  const searchSelect = document.getElementById("search-location");
+
+  locations.forEach((loc) => {
+    // Đổ vào filter-sidebar (chắc chắn là <select>)
+    if (filterSelect) {
+      const opt = document.createElement("option");
+      opt.value = loc;
+      opt.textContent = loc;
+      filterSelect.appendChild(opt);
+    }
+
+    // Nếu ô search-location cũng là <select> thì đổ thêm
+    if (searchSelect && searchSelect.tagName === "SELECT") {
+      const opt2 = document.createElement("option");
+      opt2.value = loc;
+      opt2.textContent = loc;
+      searchSelect.appendChild(opt2);
+    }
+  });
+}
+
+
 function setupEventHandlers() {
   const searchForm = document.getElementById("search-bar-form");
   if (searchForm) {
@@ -240,6 +274,7 @@ function setupEventHandlers() {
       performSearch();
     });
   }
+
 
   const applyBtn = document.getElementById("filter-apply-btn");
   const resetBtn = document.getElementById("filter-reset-btn");

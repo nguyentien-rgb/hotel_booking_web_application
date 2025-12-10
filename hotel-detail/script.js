@@ -81,7 +81,15 @@ function initHotelDetail() {
 */
 // /hotel-detail/script.js
 // /hotel-detail/script.js
-
+// thêm ở đầu file (sau getQueryParam cũng được)
+function getCurrentUser() {
+  try {
+    const raw = localStorage.getItem("current_user");
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
 document.addEventListener("DOMContentLoaded", function () {
   // Shared layout: header/footer, dark mode...
   if (window.Render && Render.initSharedLayout) {

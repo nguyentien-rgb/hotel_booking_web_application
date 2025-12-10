@@ -169,6 +169,8 @@ function processPayment(hotel, draft, method, statusEl) {
 }
 */
 // /payment/script.js
+
+/* bản 2
 document.addEventListener("DOMContentLoaded", () => {
   if (window.Render && Render.initSharedLayout) {
     Render.initSharedLayout("../shared", "payment");
@@ -176,111 +178,557 @@ document.addEventListener("DOMContentLoaded", () => {
   initPaymentPage();
 });
 
-function getBookingDraft() {
+// Lấy booking draft từ localStorage (được lưu ở trang Booking)
+function loadBookingDraft() {
   try {
     const raw = localStorage.getItem("booking_draft");
     return raw ? JSON.parse(raw) : null;
   } catch (e) {
-    console.warn("Không parse được booking_draft từ localStorage:", e);
+    console.warn("Không parse được booking_draft:", e);
     return null;
   }
 }
 
 async function initPaymentPage() {
   const summaryEl = document.getElementById("payment-summary");
-  const form = document.getElementById("payment-form");
   const statusEl = document.getElementById("payment-status");
+  const form = document.getElementById("payment-form");
 
-  if (!summaryEl || !form || !statusEl) {
-    console.warn("Thiếu #payment-summary / #payment-form / #payment-status");
+  if (!summaryEl || !statusEl || !form) {
+    console.warn("Thiếu #payment-summary / #payment-status / #payment-form");
     return;
   }
 
-  const draft = getBookingDraft();
+  // 1. Lấy draft từ localStorage
+  const draft = loadBookingDraft();
   if (!draft) {
     summaryEl.innerHTML =
-      "<p>No booking information found. Please select a hotel and booking again.</p>";
+      '<p class="text-muted">No booking draft found. Please start from <a href="../home/index.html">Home</a>.</p>';
     form.style.display = "none";
     return;
   }
 
-  // Hiển thị tóm tắt booking
-  summaryEl.innerHTML = `
-    <h2>Booking summary</h2>
-    <p><strong>Hotel:</strong> ${localStorage.getItem("selected_hotel_name") ||
-      ""}</p>
-    <p><strong>Check-in:</strong> ${draft.checkIn}</p>
-    <p><strong>Check-out:</strong> ${draft.checkOut}</p>
-    <p><strong>Guests:</strong> ${draft.guests}</p>
-    <p><strong>Nights:</strong> ${draft.nights}</p>
-    <p><strong>Total:</strong> ${Number(draft.total).toLocaleString()} VND</p>
-  `;
+  // 2. Lấy thông tin hotelId từ draft hoặc localStorage
+  const hotelId =
+    draft.hotelId || Number(localStorage.getItem("selected_hotel_id"));
 
+  let hotel;
+  try {
+    hotel = await Api.fetchHotelById(hotelId);
+  } catch (err) {
+    console.error("Lỗi fetch hotel cho payment:", err);
+    summaryEl.innerHTML =
+      '<p class="text-muted">Selected hotel is no longer available.</p>';
+    form.style.display = "none";
+    return;
+  }
+
+  if (!hotel) {
+    summaryEl.innerHTML =
+      '<p class="text-muted">Selected hotel is no longer available.</p>';
+    form.style.display = "none";
+    return;
+  }
+
+  // 3. Render phần summary (giống ghi chú cũ)
+  renderPaymentSummary(summaryEl, hotel, draft);
+
+  // 4. Xử lý chọn phương thức thanh toán (card / qr / wallet)
+  const methodInputs = document.querySelectorAll(
+    'input[name="payment-method"]'
+  );
+  const cardFields = document.getElementById("card-fields");
+  const qrInfo = document.getElementById("qr-info");
+  const walletInfo = document.getElementById("wallet-info");
+
+  function updateMethodUI() {
+    const method = getSelectedMethod();
+    if (cardFields) cardFields.classList.toggle("hidden", method !== "card");
+    if (qrInfo) qrInfo.classList.toggle("hidden", method !== "qr");
+    if (walletInfo) walletInfo.classList.toggle("hidden", method !== "wallet");
+  }
+
+  methodInputs.forEach((input) => {
+    input.addEventListener("change", updateMethodUI);
+  });
+  updateMethodUI();
+
+  // 5. Nút Back
+  const backBtn = document.getElementById("payment-back-btn");
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      if (window.Router && typeof Router.goToBooking === "function") {
+        Router.goToBooking(hotelId); // dùng hotelId
+      } else {
+        window.location.href =
+          "../booking/index.html?id=" + encodeURIComponent(hotelId);
+      }
+    });
+  }
+
+  // 6. Submit form thanh toán
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     statusEl.textContent = "";
-    statusEl.classList.remove("success", "error");
+    statusEl.className = "payment-status";
 
-    // Lấy phương thức thanh toán
-    const methodInput = form.querySelector(
-      "input[name='paymentMethod']:checked"
-    );
-    const paymentMethod = methodInput ? methodInput.value : null;
-
-    // Lấy thông tin thẻ (nếu user chọn credit card)
-    const cardHolder = form.querySelector("#card-holder");
-    const cardNumber = form.querySelector("#card-number");
-    const expiry = form.querySelector("#card-expiry");
-    const cvv = form.querySelector("#card-cvv");
-
-    // Validate đơn giản
-    if (!paymentMethod) {
-      statusEl.textContent = "Please select a payment method.";
+    const method = getSelectedMethod();
+    const cardOK = method === "card" ? validateCardFields() : true;
+    if (!cardOK) {
+      statusEl.textContent = "Please check your credit card details.";
       statusEl.classList.add("error");
       return;
     }
 
-    if (paymentMethod === "card") {
-      if (
-        !cardHolder.value.trim() ||
-        !cardNumber.value.trim() ||
-        !expiry.value.trim() ||
-        !cvv.value.trim()
-      ) {
-        statusEl.textContent =
-          "Please fill in all credit card information.";
-        statusEl.classList.add("error");
-        return;
-      }
-    }
-
-    // Gửi booking lên backend
-    statusEl.textContent = "Processing payment...";
     try {
-      const payload = {
-        userId: null, // sau này có login thì truyền id user
-        hotelId: Number(draft.hotelId || localStorage.getItem("selected_hotel_id")),
-        checkIn: draft.checkIn,
-        checkOut: draft.checkOut,
-        guests: Number(draft.guests),
-        nights: Number(draft.nights),
-        total: Number(draft.total),
-        paymentMethod,
-      };
-
-      await Api.createBooking(payload);
-
-      statusEl.textContent = "Payment successful! Your booking is confirmed.";
-      statusEl.classList.add("success");
-
-      // Xoá draft, có thể redirect sang trang profile / booking history
-      localStorage.removeItem("booking_draft");
-      // window.location.href = "../profile/index.html";
+      await processPayment(hotel, draft, method, statusEl, hotelId);
     } catch (err) {
-      console.error("Lỗi khi tạo booking:", err);
-      statusEl.textContent = "Payment failed: " + err.message;
+      console.error("Payment/processBooking error:", err);
+      statusEl.textContent =
+        "Payment failed: " + (err.message || "Unknown error");
       statusEl.classList.add("error");
     }
   });
 }
+
+// ===== Render booking summary giống file cũ =====
+function renderPaymentSummary(el, hotel, draft) {
+  const mainImage =
+    hotel.images && hotel.images.length ? hotel.images[0] : "";
+
+  el.innerHTML = `
+    <h3 style="margin-top:0; margin-bottom:0.4rem;">Booking summary</h3>
+    <p class="text-muted" style="margin-top:0;">
+      ${hotel.name} — ${hotel.location} • ${Number(hotel.rating || 0).toFixed(
+        1
+      )}★
+    </p>
+    <div style="display:flex; gap:0.8rem; margin-top:0.7rem;">
+      <div style="flex:0 0 120px;">
+        <img src="${mainImage}" alt="${
+          hotel.name
+        }" style="width:100%; border-radius:12px; height:90px; object-fit:cover;" />
+      </div>
+      <div style="flex:1; font-size:0.9rem;">
+        <p style="margin-top:0; margin-bottom:0.3rem;">
+          Check-in: <strong>${draft.checkIn}</strong><br/>
+          Check-out: <strong>${draft.checkOut}</strong><br/>
+          Guests: <strong>${draft.guests}</strong>, Nights: <strong>${
+    draft.nights
+  }</strong>
+        </p>
+        <p style="margin:0.2rem 0 0;">
+          <strong>Total: ${
+            window.Utils && Utils.formatPrice
+              ? Utils.formatPrice(draft.total)
+              : Number(draft.total).toLocaleString() + " đ"
+          }</strong>
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+// ===== Helper: lấy method đang chọn =====
+function getSelectedMethod() {
+  const selected = document.querySelector(
+    'input[name="payment-method"]:checked'
+  );
+  return selected ? selected.value : "card";
+}
+
+// ===== Validate form thẻ =====
+function validateCardFields() {
+  const nameEl = document.getElementById("card-name");
+  const numberEl = document.getElementById("card-number");
+  const expiryEl = document.getElementById("card-expiry");
+  const cvvEl = document.getElementById("card-cvv");
+
+  [nameEl, numberEl, expiryEl, cvvEl].forEach((el) => {
+    if (!el) return;
+    el.classList.remove("input-error");
+  });
+
+  let valid = true;
+
+  if (!nameEl.value.trim()) {
+    nameEl.classList.add("input-error");
+    valid = false;
+  }
+
+  const digitsOnly = numberEl.value.replace(/\D/g, "");
+  if (digitsOnly.length < 13 || digitsOnly.length > 19) {
+    numberEl.classList.add("input-error");
+    valid = false;
+  }
+
+  if (!/^\d{2}\/\d{2}$/.test(expiryEl.value)) {
+    expiryEl.classList.add("input-error");
+    valid = false;
+  }
+
+  if (!/^\d{3}$/.test(cvvEl.value)) {
+    cvvEl.classList.add("input-error");
+    valid = false;
+  }
+
+  return valid;
+}
+
+// ===== Xử lý payment + gọi backend lưu booking =====
+async function processPayment(hotel, draft, method, statusEl, hotelId) {
+  const submitBtn =
+    document.getElementById("payment-submit-btn") ||
+    document.querySelector("#payment-form button[type='submit']");
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Processing...";
+  }
+
+  statusEl.textContent = "Processing your payment, please wait…";
+  statusEl.classList.add("processing");
+
+  // Giả lập delay 1.5s giống file cũ
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+
+  // Chuẩn bị payload cho backend
+  const payload = {
+    userId: id, // sau này có đăng nhập thì truyền id user thật
+    hotelId: hotelId, // dùng id truyền vào, không dùng hotel.id
+    checkIn: draft.checkIn,
+    checkOut: draft.checkOut,
+    guests: Number(draft.guests),
+    nights: Number(draft.nights),
+    total: Number(draft.total),
+    paymentMethod: method,
+  };
+
+  // Gửi lên backend để lưu vào DB
+  await Api.createBooking(payload);
+
+  // Nếu tới đây không lỗi -> coi như thanh toán thành công
+  statusEl.classList.remove("processing");
+  statusEl.classList.add("success");
+  statusEl.textContent = "Payment successful! Your booking is confirmed.";
+
+  // Lưu lịch sử local (tuỳ chọn)
+  try {
+    const historyRaw = localStorage.getItem("booking_history") || "[]";
+    const history = JSON.parse(historyRaw);
+    history.push({
+      ...payload,
+      hotelName: hotel.name,
+      location: hotel.location,
+      createdAt: new Date().toISOString(),
+    });
+    localStorage.setItem("booking_history", JSON.stringify(history));
+  } catch (e) {
+    console.warn("Không lưu được booking_history:", e);
+  }
+
+  // Xoá draft
+  localStorage.removeItem("booking_draft");
+
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Pay now";
+  }
+
+  // Redirect sang Profile / Booking history sau 1.5s
+  setTimeout(() => {
+    if (window.Router && typeof Router.goToProfile === "function") {
+      Router.goToProfile();
+    } else {
+      window.location.href = "../profile/index.html";
+    }
+  }, 1500);
+}
+  */
+ // /payment/script.js
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.Render && Render.initSharedLayout) {
+    Render.initSharedLayout("../shared", "payment");
+  }
+  initPaymentPage();
+});
+
+// Lấy booking draft từ localStorage (được lưu ở trang Booking)
+function loadBookingDraft() {
+  try {
+    const raw = localStorage.getItem("booking_draft");
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.warn("Không parse được booking_draft:", e);
+    return null;
+  }
+}
+
+// Lấy current user từ localStorage (sau này login xong sẽ set vào đây)
+function getCurrentUser() {
+  try {
+    const raw = localStorage.getItem("current_user");
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.warn("Không parse được current_user:", e);
+    return null;
+  }
+}
+
+function getCurrentUserId() {
+  const user = getCurrentUser();
+  return user && user.id ? Number(user.id) : null;
+}
+
+async function initPaymentPage() {
+  const summaryEl = document.getElementById("payment-summary");
+  const statusEl = document.getElementById("payment-status");
+  const form = document.getElementById("payment-form");
+
+  if (!summaryEl || !statusEl || !form) {
+    console.warn("Thiếu #payment-summary / #payment-status / #payment-form");
+    return;
+  }
+
+  // 1. Lấy draft từ localStorage
+  const draft = loadBookingDraft();
+  if (!draft) {
+    summaryEl.innerHTML =
+      '<p class="text-muted">No booking draft found. Please start from <a href="../home/index.html">Home</a>.</p>';
+    form.style.display = "none";
+    return;
+  }
+
+  // 2. Lấy thông tin hotel từ backend (dựa vào draft.hotelId hoặc selected_hotel_id)
+  const hotelId =
+    draft.hotelId || Number(localStorage.getItem("selected_hotel_id"));
+
+  let hotel;
+  try {
+    hotel = await Api.fetchHotelById(hotelId);
+  } catch (err) {
+    console.error("Lỗi fetch hotel cho payment:", err);
+    summaryEl.innerHTML =
+      '<p class="text-muted">Selected hotel is no longer available.</p>';
+    form.style.display = "none";
+    return;
+  }
+
+  if (!hotel) {
+    summaryEl.innerHTML =
+      '<p class="text-muted">Selected hotel is no longer available.</p>';
+    form.style.display = "none";
+    return;
+  }
+
+  // 3. Render phần summary
+  renderPaymentSummary(summaryEl, hotel, draft);
+
+  // 4. Xử lý chọn phương thức thanh toán (card / qr / wallet)
+  const methodInputs = document.querySelectorAll(
+    'input[name="payment-method"]'
+  );
+  const cardFields = document.getElementById("card-fields");
+  const qrInfo = document.getElementById("qr-info");
+  const walletInfo = document.getElementById("wallet-info");
+
+  function updateMethodUI() {
+    const method = getSelectedMethod();
+    if (cardFields) cardFields.classList.toggle("hidden", method !== "card");
+    if (qrInfo) qrInfo.classList.toggle("hidden", method !== "qr");
+    if (walletInfo) walletInfo.classList.toggle("hidden", method !== "wallet");
+  }
+
+  methodInputs.forEach((input) => {
+    input.addEventListener("change", updateMethodUI);
+  });
+  updateMethodUI();
+
+  // 5. Nút Back
+  const backBtn = document.getElementById("payment-back-btn");
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      if (window.Router && typeof Router.goToBooking === "function") {
+        Router.goToBooking(hotel.id);
+      } else {
+        window.location.href =
+          "../booking/index.html?id=" + encodeURIComponent(hotel.id);
+      }
+    });
+  }
+
+  // 6. Submit form thanh toán
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    statusEl.textContent = "";
+    statusEl.className = "payment-status";
+
+    const method = getSelectedMethod();
+    const cardOK = method === "card" ? validateCardFields() : true;
+    if (!cardOK) {
+      statusEl.textContent = "Please check your credit card details.";
+      statusEl.classList.add("error");
+      return;
+    }
+
+    try {
+      await processPayment(hotel, draft, method, statusEl);
+    } catch (err) {
+      console.error("Payment/processBooking error:", err);
+      statusEl.textContent =
+        "Payment failed: " + (err.message || "Unknown error");
+      statusEl.classList.add("error");
+    }
+  });
+}
+
+// ===== Render booking summary =====
+function renderPaymentSummary(el, hotel, draft) {
+  const mainImage =
+    hotel.images && hotel.images.length ? hotel.images[0] : "";
+
+  el.innerHTML = `
+    <h3 style="margin-top:0; margin-bottom:0.4rem;">Booking summary</h3>
+    <p class="text-muted" style="margin-top:0;">
+      ${hotel.name} — ${hotel.location} • ${Number(hotel.rating || 0).toFixed(
+    1
+  )}★
+    </p>
+    <div style="display:flex; gap:0.8rem; margin-top:0.7rem;">
+      <div style="flex:0 0 120px;">
+        <img src="${mainImage}" alt="${
+    hotel.name
+  }" style="width:100%; border-radius:12px; height:90px; object-fit:cover;" />
+      </div>
+      <div style="flex:1; font-size:0.9rem;">
+        <p style="margin-top:0; margin-bottom:0.3rem;">
+          Check-in: <strong>${draft.checkIn}</strong><br/>
+          Check-out: <strong>${draft.checkOut}</strong><br/>
+          Guests: <strong>${draft.guests}</strong>, Nights: <strong>${
+    draft.nights
+  }</strong>
+        </p>
+        <p style="margin:0.2rem 0 0;">
+          <strong>Total: ${
+            window.Utils && Utils.formatPrice
+              ? Utils.formatPrice(draft.total)
+              : Number(draft.total).toLocaleString() + " đ"
+          }</strong>
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+// ===== Helper: lấy method đang chọn =====
+function getSelectedMethod() {
+  const selected = document.querySelector(
+    'input[name="payment-method"]:checked'
+  );
+  return selected ? selected.value : "card";
+}
+
+// ===== Validate form thẻ =====
+function validateCardFields() {
+  const nameEl = document.getElementById("card-name");
+  const numberEl = document.getElementById("card-number");
+  const expiryEl = document.getElementById("card-expiry");
+  const cvvEl = document.getElementById("card-cvv");
+
+  [nameEl, numberEl, expiryEl, cvvEl].forEach((el) => {
+    if (!el) return;
+    el.classList.remove("input-error");
+  });
+
+  let valid = true;
+
+  if (!nameEl.value.trim()) {
+    nameEl.classList.add("input-error");
+    valid = false;
+  }
+
+  const digitsOnly = numberEl.value.replace(/\D/g, "");
+  if (digitsOnly.length < 13 || digitsOnly.length > 19) {
+    numberEl.classList.add("input-error");
+    valid = false;
+  }
+
+  if (!/^\d{2}\/\d{2}$/.test(expiryEl.value)) {
+    expiryEl.classList.add("input-error");
+    valid = false;
+  }
+
+  if (!/^\d{3}$/.test(cvvEl.value)) {
+    cvvEl.classList.add("input-error");
+    valid = false;
+  }
+
+  return valid;
+}
+
+// ===== Xử lý payment + gọi backend lưu booking =====
+async function processPayment(hotel, draft, method, statusEl) {
+  const submitBtn =
+    document.getElementById("payment-submit-btn") ||
+    document.querySelector("#payment-form button[type='submit']");
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Processing...";
+  }
+
+  statusEl.textContent = "Processing your payment, please wait…";
+  statusEl.classList.add("processing");
+
+  // Giả lập delay 1.5s cho mượt
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+
+  // Lấy user id nếu user đã login
+  const currentUserId = getCurrentUserId();
+
+  // Chuẩn bị payload cho backend
+  const payload = {
+    userId: currentUserId, // nếu chưa login thì null -> user_id = NULL trong DB
+    hotelId: hotel.id,
+    checkIn: draft.checkIn,
+    checkOut: draft.checkOut,
+    guests: Number(draft.guests),
+    nights: Number(draft.nights),
+    total: Number(draft.total),
+    paymentMethod: method,
+  };
+
+  // Gửi lên backend để lưu vào DB
+  const result = await Api.createBooking(payload);
+
+  // Nếu tới đây không lỗi -> coi như thanh toán thành công
+  statusEl.classList.remove("processing");
+  statusEl.classList.add("success");
+
+  const bookingIdText =
+    result && result.bookingId ? ` (#${result.bookingId})` : "";
+
+  statusEl.textContent =
+    "Payment successful" +
+    bookingIdText +
+    "! Your booking is confirmed.";
+
+  // Xoá draft
+  localStorage.removeItem("booking_draft");
+
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Pay now";
+  }
+
+  // Redirect sang Profile / Booking history sau 1.5s
+  setTimeout(() => {
+    if (window.Router && typeof Router.goToProfile === "function") {
+      Router.goToProfile();
+    } else {
+      window.location.href = "../profile/index.html";
+    }
+  }, 1500);
+}
+

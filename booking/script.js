@@ -204,7 +204,7 @@ async function initBookingPage() {
   `;
 
   // Lưu vài thông tin để payment dùng
-  localStorage.setItem("selected_hotel_id", String(hotel.id));
+  localStorage.setItem("selected_hotel_id", String(hotelId));   // 🔥 dùng hotelId
   localStorage.setItem("selected_hotel_name", hotel.name);
   localStorage.setItem("selected_hotel_price", String(hotel.price));
 
@@ -278,7 +278,7 @@ async function initBookingPage() {
 
       // Lưu draft để payment page dùng
       const draft = {
-        hotelId: hotel.id,
+        hotelId: hotelId,                 //  dùng hotelId thay vì hotel.id
         checkIn: checkInInput.value,
         checkOut: checkOutInput.value,
         guests,
@@ -299,4 +299,3 @@ async function initBookingPage() {
   // Khởi tạo summary ban đầu
   updateSummary();
 }
-
