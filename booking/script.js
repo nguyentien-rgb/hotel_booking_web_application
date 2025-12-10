@@ -116,8 +116,6 @@ function setupBookingForm(hotel) {
   });
 }
 */
-// /booking/script.js
-
 document.addEventListener("DOMContentLoaded", () => {
   if (window.Render && Render.initSharedLayout) {
     Render.initSharedLayout("../shared", "booking");
@@ -140,7 +138,9 @@ async function initBookingPage() {
   const btnProceed = document.getElementById("booking-btn-proceed");
 
   if (!cardEl || !formEl || !summaryEl) {
-    console.warn("Thiếu #booking-selected-hotel hoặc #booking-stay-form hoặc #booking-price-summary");
+    console.warn(
+      "Thiếu #booking-selected-hotel hoặc #booking-stay-form hoặc #booking-price-summary"
+    );
     return;
   }
 
@@ -148,16 +148,15 @@ async function initBookingPage() {
   const hotelId = idStr ? Number(idStr) : NaN;
   console.log("Booking page hotelId =", hotelId);
 
-  // Nếu không có id -> báo "No hotel selected"
   if (!hotelId) {
     cardEl.innerHTML =
       '<p class="booking-empty">No hotel selected. Please choose a hotel from <a href="../search/index.html">Search</a>.</p>';
     formEl.style.opacity = "0.6";
-    formEl.querySelectorAll("input, button").forEach((el) => (el.disabled = false)); // vẫn cho nhập
+    formEl.querySelectorAll("input, button").forEach((el) => (el.disabled = false));
     return;
   }
 
-  // Lấy thông tin khách sạn từ backend
+  // Lấy hotel từ backend
   let hotel;
   try {
     hotel = await Api.fetchHotelById(hotelId);
@@ -174,7 +173,6 @@ async function initBookingPage() {
     return;
   }
 
-  // Render card bên trái
   const mainImage =
     hotel.images && hotel.images.length ? hotel.images[0] : "";
 
@@ -203,12 +201,11 @@ async function initBookingPage() {
     </div>
   `;
 
-  // Lưu vài thông tin để payment dùng
-  localStorage.setItem("selected_hotel_id", String(hotelId));   // 🔥 dùng hotelId
+  // lưu cho payment dùng
+  localStorage.setItem("selected_hotel_id", String(hotelId));
   localStorage.setItem("selected_hotel_name", hotel.name);
   localStorage.setItem("selected_hotel_price", String(hotel.price));
 
-  // ===== Xử lý form stay details =====
   const checkInInput = formEl.querySelector("#booking-check-in");
   const checkOutInput = formEl.querySelector("#booking-check-out");
   const guestsInput = formEl.querySelector("#booking-guests");
@@ -238,64 +235,79 @@ async function initBookingPage() {
         : total.toLocaleString() + " đ");
   }
 
-  // Re-calc khi đổi ngày / số khách
   [checkInInput, checkOutInput, guestsInput].forEach((input) => {
     if (!input) return;
     input.addEventListener("change", updateSummary);
     input.addEventListener("input", updateSummary);
   });
 
-  // Nút Back
   if (btnBack) {
     btnBack.addEventListener("click", () => {
       if (window.history.length > 1) window.history.back();
       else window.location.href = "../search/index.html";
     });
   }
+// Nút Proceed to payment
+if (btnProceed) {
+  btnProceed.addEventListener("click", (e) => {
+    e.preventDefault();
 
-  // Nút Proceed to payment
-  if (btnProceed) {
-    btnProceed.addEventListener("click", (e) => {
-      e.preventDefault();
+    // (tuỳ bạn, có thể bắt login ở đây luôn)
+    const currentUser =
+      window.Utils && typeof Utils.getCurrentUser === "function"
+        ? Utils.getCurrentUser()
+        : null;
 
-      const nights = calcNights();
-      const guests = Number(guestsInput.value || "1");
+    if (!currentUser) {
+      alert("You must login before booking.");
+      window.location.href = "../login/index.html";
+      return;
+    }
 
-      if (!checkInInput.value || !checkOutInput.value) {
-        alert("Please select both check-in and check-out dates.");
-        return;
-      }
-      if (nights <= 0) {
-        alert("Check-out must be after check-in.");
-        return;
-      }
-      if (!guests || guests <= 0) {
-        alert("Guests must be at least 1.");
-        return;
-      }
+    const nights = calcNights();
+    const guests = Number(guestsInput.value || "1");
 
-      const total = nights * guests * Number(hotel.price);
+    if (!checkInInput.value || !checkOutInput.value) {
+      alert("Please select both check-in and check-out dates.");
+      return;
+    }
+    if (nights <= 0) {
+      alert("Check-out must be after check-in.");
+      return;
+    }
+    if (!guests || guests <= 0) {
+      alert("Guests must be at least 1.");
+      return;
+    }
 
-      // Lưu draft để payment page dùng
-      const draft = {
-        hotelId: hotelId,                 //  dùng hotelId thay vì hotel.id
-        checkIn: checkInInput.value,
-        checkOut: checkOutInput.value,
-        guests,
-        nights,
-        total,
-      };
+    const total = nights * guests * Number(hotel.price);
+
+    //  CHỈ LƯU DRAFT CHO PAYMENT, KHÔNG GỌI API Ở ĐÂY
+    const draft = {
+      hotelId: hotel.id,
+      hotelName: hotel.name,
+      location: hotel.location,
+      checkIn: checkInInput.value,
+      checkOut: checkOutInput.value,
+      guests,
+      nights,
+      total,
+    };
+
+    try {
       localStorage.setItem("booking_draft", JSON.stringify(draft));
+    } catch (err) {
+      console.warn("Không lưu được booking_draft:", err);
+    }
 
-      // Chuyển sang payment
-      if (window.Router && typeof Router.goToPayment === "function") {
-        Router.goToPayment();
-      } else {
-        window.location.href = "../payment/index.html";
-      }
-    });
-  }
+    // Chuyển sang trang payment
+    if (window.Router && typeof Router.goToPayment === "function") {
+      Router.goToPayment();
+    } else {
+      window.location.href = "../payment/index.html";
+    }
+  });
+}
 
-  // Khởi tạo summary ban đầu
   updateSummary();
 }

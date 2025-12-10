@@ -9,10 +9,12 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 
-// test
+// ───────────────── HEALTH CHECK ─────────────────
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
+
+// ───────────────── HOTELS ─────────────────
 
 // lấy danh sách hotel
 app.get("/api/hotels", async (req, res) => {
@@ -53,7 +55,9 @@ app.get("/api/hotels/:id", async (req, res) => {
       [id]
     );
 
-    if (!rows.length) return res.status(404).json({ error: "Hotel not found" });
+    if (!rows.length) {
+      return res.status(404).json({ error: "Hotel not found" });
+    }
 
     const row = rows[0];
     const hotel = {
@@ -72,7 +76,10 @@ app.get("/api/hotels/:id", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-// POST tạo booking sau khi thanh toán
+
+// ───────────────── BOOKINGS ─────────────────
+
+// POST /api/bookings  → tạo booking mới
 app.post("/api/bookings", async (req, res) => {
   try {
     const {
@@ -86,10 +93,13 @@ app.post("/api/bookings", async (req, res) => {
       paymentMethod,
     } = req.body;
 
+    console.log("📥 POST /api/bookings body =", req.body);
+
     if (!hotelId || !checkIn || !checkOut || !guests || !nights || !total) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
+    // kiểm tra hotel có tồn tại
     const [hotelRows] = await pool.query(
       "SELECT id FROM hotels WHERE id = ?",
       [hotelId]
@@ -98,6 +108,7 @@ app.post("/api/bookings", async (req, res) => {
       return res.status(400).json({ error: "Hotel not found" });
     }
 
+    // chèn booking
     const [result] = await pool.query(
       `INSERT INTO bookings
        (user_id, hotel_id, check_in, check_out, guests, nights, total, payment_method)
@@ -119,38 +130,36 @@ app.post("/api/bookings", async (req, res) => {
       bookingId: result.insertId,
     });
   } catch (err) {
-    console.error("Error /api/bookings:", err);
+    console.error("🔥 Error /api/bookings (POST):", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// GET danh sách bookings (nếu có ?userId=... thì lọc theo user)
+// GET /api/bookings  → lấy danh sách booking (filter theo userId nếu có)
 app.get("/api/bookings", async (req, res) => {
   try {
-    const userId = req.query.userId ? Number(req.query.userId) : null;
-
-    let sql =
-      `SELECT b.*, h.name AS hotel_name, h.location
-       FROM bookings b
-       JOIN hotels h ON b.hotel_id = h.id`;
-    const params = [];
-
-    if (userId) {
-      sql += " WHERE b.user_id = ?";
-      params.push(userId);
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({ error: "Missing userId" });
     }
 
-    sql += " ORDER BY b.created_at DESC";
+    const [rows] = await pool.query(
+      `SELECT b.*, h.name AS hotel_name, h.location AS hotel_location
+       FROM bookings b
+       JOIN hotels h ON b.hotel_id = h.id
+       WHERE b.user_id = ?
+       ORDER BY b.created_at DESC`,
+      [userId]
+    );
 
-    const [rows] = await pool.query(sql, params);
     res.json(rows);
   } catch (err) {
-    console.error("Error /api/bookings (GET):", err);
+    console.error("Error fetching bookings:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-
+// ───────────────── START SERVER ─────────────────
 app.listen(PORT, () => {
   console.log(`✅ Backend listening at http://localhost:${PORT}`);
 });

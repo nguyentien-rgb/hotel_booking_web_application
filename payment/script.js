@@ -465,8 +465,11 @@ function loadBookingDraft() {
   }
 }
 
-// Lấy current user từ localStorage (sau này login xong sẽ set vào đây)
+// Lấy current user (ưu tiên Utils.getCurrentUser nếu có)
 function getCurrentUser() {
+  if (window.Utils && typeof Utils.getCurrentUser === "function") {
+    return Utils.getCurrentUser();
+  }
   try {
     const raw = localStorage.getItem("current_user");
     return raw ? JSON.parse(raw) : null;
@@ -476,9 +479,19 @@ function getCurrentUser() {
   }
 }
 
+// Lấy userId để gửi lên backend (id hoặc email)
 function getCurrentUserId() {
   const user = getCurrentUser();
-  return user && user.id ? Number(user.id) : null;
+  if (!user) return null;
+
+  // ưu tiên id, nếu không có thì dùng email
+  return (
+    user.id ??
+    user.userId ??
+    user.StudentID ??
+    user.email ??
+    null
+  );
 }
 
 async function initPaymentPage() {
@@ -681,15 +694,28 @@ async function processPayment(hotel, draft, method, statusEl) {
   statusEl.textContent = "Processing your payment, please wait…";
   statusEl.classList.add("processing");
 
-  // Giả lập delay 1.5s cho mượt
+  // Giả lập delay 1.5s
   await new Promise((resolve) => setTimeout(resolve, 1500));
 
-  // Lấy user id nếu user đã login
-  const currentUserId = getCurrentUserId();
+  // Lấy userId (email/id) – phải login
+  const userId = getCurrentUserId();
+  if (!userId) {
+    statusEl.classList.remove("processing");
+    statusEl.classList.add("error");
+    statusEl.textContent = "You must login before paying.";
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Pay now";
+    }
+    setTimeout(() => {
+      window.location.href = "../login/index.html";
+    }, 1500);
+    return;
+  }
 
   // Chuẩn bị payload cho backend
   const payload = {
-    userId: currentUserId, // nếu chưa login thì null -> user_id = NULL trong DB
+    userId, // email/id
     hotelId: hotel.id,
     checkIn: draft.checkIn,
     checkOut: draft.checkOut,
@@ -710,9 +736,7 @@ async function processPayment(hotel, draft, method, statusEl) {
     result && result.bookingId ? ` (#${result.bookingId})` : "";
 
   statusEl.textContent =
-    "Payment successful" +
-    bookingIdText +
-    "! Your booking is confirmed.";
+    "Payment successful" + bookingIdText + "! Your booking is confirmed.";
 
   // Xoá draft
   localStorage.removeItem("booking_draft");
@@ -731,4 +755,3 @@ async function processPayment(hotel, draft, method, statusEl) {
     }
   }, 1500);
 }
-

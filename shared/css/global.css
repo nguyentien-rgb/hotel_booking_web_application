@@ -330,7 +330,7 @@ textarea:focus {
 
 .header-link {
   font-size: 0.86rem;
-  color: #131314;
+  color: #dbdbe3;
   text-decoration: none;
   padding: 0.25rem 0.7rem;
   border-radius: 999px;
@@ -341,9 +341,6 @@ textarea:focus {
     border-color var(--transition-fast);
 }
 
-.header-link:hover {
-  background: rgba(250, 204, 21, 0.8);
-}
 
 /* Footer */
 
@@ -408,7 +405,7 @@ textarea:focus {
 }
 
 .card-soft {
-  background: linear-gradient(145deg, var(--color-surface-soft), #ffffff);
+  background: linear-gradient(145deg, var(--color-surface-soft), #bfb8b8);
 }
 
 /* Hotel card */
@@ -463,7 +460,7 @@ textarea:focus {
   align-items: center;
   gap: 0.25rem;
   background: rgba(0, 0, 0, 0.72);
-  color: #fef3c7;
+  color: #b9b6ac;
   backdrop-filter: blur(12px);
 }
 
