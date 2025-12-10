@@ -5,9 +5,13 @@ const pool = require("./db");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+const authRoutes = require("./routes/auth.js");
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/auth", authRoutes);
+
+
 
 // ───────────────── HEALTH CHECK ─────────────────
 app.get("/api/health", (req, res) => {
