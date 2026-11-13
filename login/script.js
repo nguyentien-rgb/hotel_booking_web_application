@@ -26,18 +26,11 @@ function initLoginPage() {
     }
 
     try {
-      // Gọi backend thật thay vì Utils.loadUsers()
-      // POST http://localhost:4000/api/auth/login
+      // POST /api/auth/login → { token, user }
       const data = await Api.loginUser({ email, password });
-      const user = data.user; // { id, name, email }
 
-      // Lưu user hiện tại để FE biết là đang đăng nhập
-      if (window.Utils && typeof Utils.setCurrentUser === "function") {
-        Utils.setCurrentUser(user);
-      } else {
-        // fallback nếu Utils chưa sẵn sàng
-        localStorage.setItem("current_user", JSON.stringify(user));
-      }
+      // Lưu user kèm token; Api gửi token này trong header Authorization
+      Utils.setCurrentUser({ ...data.user, token: data.token });
 
       // Điều hướng sang trang profile
       Router.goToProfile();

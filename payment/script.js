@@ -284,9 +284,14 @@ async function initPaymentPage() {
       await processPayment(hotel, draft, method, statusEl, hotelId);
     } catch (err) {
       console.error("Payment/processBooking error:", err);
+      statusEl.className = "payment-status error";
       statusEl.textContent =
         "Payment failed: " + (err.message || "Unknown error");
-      statusEl.classList.add("error");
+      const submitBtn = form.querySelector("button[type='submit']");
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Pay now";
+      }
     }
   });
 }
@@ -589,9 +594,14 @@ async function initPaymentPage() {
       await processPayment(hotel, draft, method, statusEl);
     } catch (err) {
       console.error("Payment/processBooking error:", err);
+      statusEl.className = "payment-status error";
       statusEl.textContent =
         "Payment failed: " + (err.message || "Unknown error");
-      statusEl.classList.add("error");
+      const submitBtn = form.querySelector("button[type='submit']");
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Pay now";
+      }
     }
   });
 }
@@ -713,15 +723,12 @@ async function processPayment(hotel, draft, method, statusEl) {
     return;
   }
 
-  // Chuẩn bị payload cho backend
+  // userId lấy từ token, nights/total do server tự tính
   const payload = {
-    userId, // email/id
     hotelId: hotel.id,
     checkIn: draft.checkIn,
     checkOut: draft.checkOut,
     guests: Number(draft.guests),
-    nights: Number(draft.nights),
-    total: Number(draft.total),
     paymentMethod: method,
   };
 
