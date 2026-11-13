@@ -1,0 +1,84 @@
+.owner-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.owner-intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.section-head select {
+  max-width: 240px;
+}
+
+.section-note {
+  margin: 0.4rem 0 1rem;
+  font-size: 0.85rem;
+}
+
+.hotel-form {
+  margin-bottom: 1.4rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.hotel-form h3 {
+  margin-top: 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 1rem;
+}
+
+.form-field-wide {
+  grid-column: 1 / -1;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.hotel-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.hotel-thumb {
+  width: 56px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
+@media (max-width: 700px) {
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

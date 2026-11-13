@@ -1,55 +1,32 @@
-<aside class="card" id="filter-sidebar">
-  <h3 style="margin-top: 0; margin-bottom: 0.8rem">Filters</h3>
-  <p class="text-muted" style="font-size: 0.85rem; margin-top: 0">
-    Refine your stay with luxury filters.
-  </p>
+<aside class="card filter-panel" id="filter-sidebar">
+  <div class="filter-panel-head">
+    <h3>Filters</h3>
+    <button id="filter-reset-btn" class="filter-reset" type="button">Reset</button>
+  </div>
 
-  <div class="form-field">
-    <label for="filter-location">Location</label>
+  <div class="filter-group">
+    <label for="filter-location" class="filter-label">Destination</label>
     <select id="filter-location">
-      <option value="">All</option>
+      <option value="">All destinations</option>
     </select>
   </div>
 
-  <div class="form-row">
-    <div class="form-field">
-      <label for="filter-min-price">Min price</label>
-      <input type="number" id="filter-min-price" min="0" />
+  <div class="filter-group">
+    <span class="filter-label">Price per guest / night</span>
+    <div class="chip-group" id="filter-price">
+      <label class="chip"><input type="radio" name="price" value="" checked /><span>Any</span></label>
+      <label class="chip"><input type="radio" name="price" value="0-700000" /><span>Under 700K</span></label>
+      <label class="chip"><input type="radio" name="price" value="700000-1000000" /><span>700K – 1M</span></label>
+      <label class="chip"><input type="radio" name="price" value="1000000-" /><span>Over 1M</span></label>
     </div>
-    <div class="form-field">
-      <label for="filter-max-price">Max price</label>
-      <input type="number" id="filter-max-price" min="0" />
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">Guest rating</span>
+    <div class="chip-group" id="filter-rating">
+      <label class="chip"><input type="radio" name="rating" value="" checked /><span>Any</span></label>
+      <label class="chip"><input type="radio" name="rating" value="4.5" /><span>4.5★ +</span></label>
+      <label class="chip"><input type="radio" name="rating" value="4" /><span>4★ +</span></label>
     </div>
   </div>
-
-  <div class="form-field">
-    <label for="filter-rating">Rating</label>
-    <select id="filter-rating">
-      <option value="">Any</option>
-      <option value="4">4★+</option>
-      <option value="4.5">4.5★+</option>
-    </select>
-  </div>
-
-  <div class="form-field">
-    <label for="filter-sort">Sort by</label>
-    <select id="filter-sort">
-      <option value="">Recommended</option>
-      <option value="price-asc">Price: low to high</option>
-      <option value="price-desc">Price: high to low</option>
-      <option value="rating-desc">Rating</option>
-    </select>
-  </div>
-
-  <button id="filter-apply-btn" class="btn btn-gold btn-full" type="button">
-    Apply filters
-  </button>
-  <button
-    id="filter-reset-btn"
-    class="btn btn-outline btn-full"
-    type="button"
-    style="margin-top: 0.4rem"
-  >
-    Reset
-  </button>
 </aside>

@@ -13,3 +13,16 @@
 .auth-form {
   margin-top: 0.8rem;
 }
+
+.owner-fields {
+  margin-top: 0.4rem;
+  padding: 0.9rem 1rem 0.2rem;
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius-md);
+}
+
+.owner-fields-title {
+  margin: 0 0 0.6rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}

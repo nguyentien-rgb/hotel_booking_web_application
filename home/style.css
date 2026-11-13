@@ -2,6 +2,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.1fr);
   gap: 1.6rem;
+  padding: 1.6rem;
+  align-items: center;
   border-radius: 22px;
   box-shadow: var(--shadow-soft);
   margin-bottom: 1.5rem;
@@ -9,7 +11,6 @@
 
 .home-hero-text {
   padding-right: 0.5rem;
-  margin-left: 15px;
 }
 
 .home-hero-title {
@@ -24,8 +25,38 @@
   font-size: 0.95rem;
 }
 
+.home-search-label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: 0.4rem;
+}
+
 .home-search-form {
-  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.35rem 0.35rem 1rem;
+  border-radius: 999px;
+  background: var(--color-input-bg);
+  border: 1px solid var(--color-border);
+  margin-bottom: 0.8rem;
+}
+
+.home-search-form:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(198, 166, 103, 0.25);
+}
+
+.home-search-form input {
+  flex: 1;
+  min-width: 0;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
 }
 
 .home-hero-meta {
@@ -40,7 +71,8 @@
 .home-hero-photo {
   border-radius: 20px;
   height: 230px;
-  background-image: url("https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&cs=tinysrgb&w=1200");
+  background-color: #d6d3d1;
+  background-image: url("../shared/images/hotels/halong-aerial.jpg");
   background-size: cover;
   background-position: center;
   box-shadow: 0 22px 55px rgba(0, 0, 0, 0.6);

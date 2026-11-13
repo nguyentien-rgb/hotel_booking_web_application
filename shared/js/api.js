@@ -1,169 +1,147 @@
-/*
 // shared/js/api.js
+// Mọi lời gọi tới backend ASP.NET Core Web API đều đi qua file này.
 (function () {
   const API_BASE_URL = "http://localhost:4000/api";
 
-  async function fetchHotels() {
-    const res = await fetch(`${API_BASE_URL}/hotels`);
-    if (!res.ok) throw new Error("Failed to load hotels");
-    // Không set window.HOTELS nữa để tránh data fake
-    // const data = await res.json();
-    // window.HOTELS = data;
-    // return data;
-    return res.json();
+  // User hiện tại lưu ở localStorage: { id, name, email, role, token }
+  function getCurrentUser() {
+    return window.Utils && typeof Utils.getCurrentUser === "function"
+      ? Utils.getCurrentUser()
+      : null;
   }
 
-  async function fetchHotelById(id) {
-    const res = await fetch(
-      `${API_BASE_URL}/hotels/${encodeURIComponent(id)}`
-    );
-    if (!res.ok) throw new Error("Failed to load hotel");
-    return res.json();
-  }
+  // Hàm gọi API chung: tự gắn JWT, tự đọc lỗi { message } từ server
+  async function request(path, { method = "GET", body, auth = false } = {}) {
+    const headers = {};
+    if (body !== undefined) headers["Content-Type"] = "application/json";
 
-  async function createBooking(payload) {
-    const res = await fetch(`${API_BASE_URL}/bookings`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || "Failed to create booking");
+    if (auth) {
+      const user = getCurrentUser();
+      if (!user || !user.token) throw new Error("Please login first.");
+      headers.Authorization = "Bearer " + user.token;
     }
-    return res.json();
-  }
 
-  // Expose global
-  window.Api = { fetchHotels, fetchHotelById, createBooking };
-})();
-*/
-// shared/js/api.js
-// shared/js/api.js
-(function () {
-  const API_BASE_URL = "http://localhost:4000/api"; // backend .NET (HotelBooking)
+    let res;
+    try {
+      res = await fetch(API_BASE_URL + path, {
+        method,
+        headers,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+      });
+    } catch (e) {
+      throw new Error("Cannot connect to the server. Is the API running?");
+    }
 
-  // Header gửi kèm JWT (token lưu chung trong object user ở localStorage)
-  function authHeaders() {
-    const user = getCurrentUser();
-    const headers = { "Content-Type": "application/json" };
-    if (user && user.token) headers.Authorization = "Bearer " + user.token;
-    return headers;
-  }
+    const data = await res.json().catch(() => ({}));
 
-  // Đọc lỗi { message } từ server; 401 = token hết hạn/không có → đăng xuất
-  async function handleError(res, fallback) {
-    const err = await res.json().catch(() => ({}));
-    if (res.status === 401) {
+    if (res.status === 401 && auth) {
+      // Token hết hạn hoặc không hợp lệ → đăng xuất
       Utils.logoutCurrentUser();
       throw new Error("Your session has expired. Please login again.");
     }
-    throw new Error(err.message || fallback);
+    if (res.status === 403) {
+      throw new Error(data.message || "You do not have permission to do this.");
+    }
+    if (!res.ok) {
+      throw new Error(data.message || "Request failed (" + res.status + ").");
+    }
+    return data;
   }
 
-  // Dùng chung với Utils.getCurrentUser (key: "hb_current_user")
-  function getCurrentUser() {
-    // Nếu Utils đã load, ưu tiên dùng luôn cho đồng bộ
-    if (window.Utils && typeof Utils.getCurrentUser === "function") {
-      return Utils.getCurrentUser();
-    }
-
-    // Fallback: đọc trực tiếp localStorage
-    try {
-      const raw =
-        localStorage.getItem("hb_current_user") || // đúng key hiện tại
-        localStorage.getItem("current_user");      // key cũ (nếu còn)
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) {
-      return null;
-    }
+  function qs(params) {
+    const s = new URLSearchParams(
+      Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== null && v !== "")
+    ).toString();
+    return s ? "?" + s : "";
   }
 
-  // ================== HOTELS ==================
+  // ================== HOTELS (công khai) ==================
 
   async function fetchHotels() {
-    const res = await fetch(API_BASE_URL + "/hotels");
-    if (!res.ok) throw new Error("Failed to fetch hotels");
-    const data = await res.json();
-    // Lưu global nếu cần dùng chỗ khác
+    const data = await request("/hotels");
     window.HOTELS = data;
     return data;
   }
 
-  async function fetchHotelById(id) {
-    const res = await fetch(
-      API_BASE_URL + "/hotels/" + encodeURIComponent(id)
-    );
-    if (!res.ok) throw new Error("Failed to fetch hotel detail");
-    return res.json();
-  }
-
-  // ================== BOOKINGS ==================
-
-  async function createBooking(payload) {
-    const res = await fetch(API_BASE_URL + "/bookings", {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) await handleError(res, "Failed to create booking");
-    return res.json(); // { success, bookingId, nights, total }
-  }
-
-  // Lấy danh sách booking của current user
-  async function fetchMyBookings() {
-    // Server biết user qua JWT, không gửi userId
-    const res = await fetch(API_BASE_URL + "/bookings", {
-      headers: authHeaders(),
-    });
-    if (!res.ok) await handleError(res, "Failed to fetch bookings");
-    return res.json();
+  function fetchHotelById(id) {
+    return request("/hotels/" + encodeURIComponent(id));
   }
 
   // ================== AUTH ==================
 
-  // 🔐 Login: gọi POST /api/auth/login
-  async function loginUser({ email, password }) {
-    const res = await fetch(API_BASE_URL + "/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      throw new Error(data.message || "Login failed");
-    }
-
-    // data = { token, user: { id, name, email, role } }
-    return data;
+  // → { token, user: { id, name, email, role } }
+  function loginUser({ email, password }) {
+    return request("/auth/login", { method: "POST", body: { email, password } });
   }
 
-  async function registerUser({ name, email, password }) {
-    const res = await fetch(API_BASE_URL + "/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      throw new Error(data.message || "Register failed.");
-    }
-
-    // data = { token, user: { id, name, email, role } }
-    return data;
+  // Thông tin mới nhất của người đang đăng nhập → { id, name, email, role, phone }
+  function fetchMe() {
+    return request("/auth/me", { auth: true });
   }
 
-  // Expose global
+  // role: "customer" hoặc "owner"; owner gửi thêm businessName, taxCode
+  function registerUser({ name, email, password, role, phone, businessName, taxCode }) {
+    return request("/auth/register", {
+      method: "POST",
+      body: { name, email, password, role, phone, businessName, taxCode },
+    });
+  }
+
+  // ================== CUSTOMER ==================
+
+  // payload: { hotelId, checkIn, checkOut, guests, paymentMethod }
+  function createBooking(payload) {
+    return request("/bookings", { method: "POST", body: payload, auth: true });
+  }
+
+  function fetchMyBookings() {
+    return request("/bookings", { auth: true });
+  }
+
+  function cancelBooking(id) {
+    return request("/bookings/" + id + "/cancel", { method: "PUT", auth: true });
+  }
+
+  // ================== OWNER ==================
+
+  const owner = {
+    profile: () => request("/owner/profile", { auth: true }),
+    saveProfile: (data) => request("/owner/profile", { method: "PUT", body: data, auth: true }),
+    hotels: () => request("/owner/hotels", { auth: true }),
+    createHotel: (data) => request("/owner/hotels", { method: "POST", body: data, auth: true }),
+    updateHotel: (id, data) =>
+      request("/owner/hotels/" + id, { method: "PUT", body: data, auth: true }),
+    deleteHotel: (id) => request("/owner/hotels/" + id, { method: "DELETE", auth: true }),
+    bookings: (status) => request("/owner/bookings" + qs({ status }), { auth: true }),
+    confirmBooking: (id) => request("/owner/bookings/" + id + "/confirm", { method: "PUT", auth: true }),
+    rejectBooking: (id) => request("/owner/bookings/" + id + "/reject", { method: "PUT", auth: true }),
+    completeBooking: (id) =>
+      request("/owner/bookings/" + id + "/complete", { method: "PUT", auth: true }),
+  };
+
+  // ================== ADMIN ==================
+
+  const admin = {
+    stats: () => request("/admin/stats", { auth: true }),
+    hotels: (status) => request("/admin/hotels" + qs({ status }), { auth: true }),
+    approveHotel: (id) => request("/admin/hotels/" + id + "/approve", { method: "PUT", auth: true }),
+    rejectHotel: (id) => request("/admin/hotels/" + id + "/reject", { method: "PUT", auth: true }),
+    users: (role) => request("/admin/users" + qs({ role }), { auth: true }),
+    lockUser: (id) => request("/admin/users/" + id + "/lock", { method: "PUT", auth: true }),
+    unlockUser: (id) => request("/admin/users/" + id + "/unlock", { method: "PUT", auth: true }),
+    bookings: (status) => request("/admin/bookings" + qs({ status }), { auth: true }),
+  };
+
   window.Api = {
     fetchHotels,
     fetchHotelById,
-    createBooking,
-    fetchMyBookings,
     loginUser,
     registerUser,
+    fetchMe,
+    createBooking,
+    fetchMyBookings,
+    cancelBooking,
+    owner,
+    admin,
   };
 })();

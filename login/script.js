@@ -7,10 +7,22 @@ document.addEventListener("DOMContentLoaded", function () {
 function initLoginPage() {
   const form = document.getElementById("login-form");
   const errorEl = document.getElementById("login-error");
+  if (!form) return;
 
-  if (!form) {
-    console.warn("Login form not found.");
-    return;
+  const next = new URLSearchParams(window.location.search).get("next");
+
+  // Bị chuyển sang đây vì bấm "Book now" khi chưa đăng nhập → báo cho khách biết
+  if (next) {
+    const notice = document.createElement("p");
+    notice.className = "login-notice";
+    notice.textContent = "Please login to continue your booking.";
+    form.parentNode.insertBefore(notice, form);
+
+    // Link "Create an account" giữ lại ?next= để đăng ký xong cũng quay lại đặt phòng
+    const registerLink = form.querySelector('a[href*="register"]');
+    if (registerLink) {
+      registerLink.href = "../register/index.html?next=" + encodeURIComponent(next);
+    }
   }
 
   form.addEventListener("submit", async function (e) {
@@ -26,18 +38,16 @@ function initLoginPage() {
     }
 
     try {
-      // POST /api/auth/login → { token, user }
+      // POST /api/auth/login → { token, user: { id, name, email, role } }
       const data = await Api.loginUser({ email, password });
-
-      // Lưu user kèm token; Api gửi token này trong header Authorization
       Utils.setCurrentUser({ ...data.user, token: data.token });
 
-      // Điều hướng sang trang profile
-      Router.goToProfile();
+      // admin → trang admin, owner → trang owner,
+      // customer → quay lại trang đặt phòng (nếu có ?next=) hoặc trang chủ
+      Router.goAfterLogin(data.user);
     } catch (err) {
       console.error("Login error:", err);
-      errorEl.textContent =
-        err.message || "Invalid email or password (mock authentication).";
+      errorEl.textContent = err.message || "Login failed.";
     }
   });
 }

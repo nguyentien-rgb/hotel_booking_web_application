@@ -14,23 +14,30 @@
     <main class="page">
       <div class="container">
         <header class="page-header">
-          <h1 class="page-title">Search hotels</h1>
-          <p class="page-subtitle">
-            Filter by location, price and rating to find your perfect stay.
-          </p>
+          <h1 class="page-title">Find your stay</h1>
+          <p class="page-subtitle">Search by hotel or destination, then narrow down with filters.</p>
         </header>
 
         <section id="search-bar-root" class="search-bar-section"></section>
 
         <section class="search-layout">
           <div id="filter-sidebar-root" class="search-sidebar"></div>
+
           <div class="search-results">
             <div class="search-results-header">
-              <p id="search-results-meta" class="text-muted">
-                Searching for the best luxury experiences...
-              </p>
+              <p id="search-results-meta" class="search-results-meta">Loading hotels...</p>
+              <label class="sort-control">
+                <span>Sort by</span>
+                <select id="filter-sort">
+                  <option value="">Recommended</option>
+                  <option value="price-asc">Price: low to high</option>
+                  <option value="price-desc">Price: high to low</option>
+                  <option value="rating-desc">Top rated</option>
+                </select>
+              </label>
             </div>
-            <div id="search-results-list" class="grid grid-3"></div>
+            <div id="active-filters" class="active-filters"></div>
+            <div id="search-results-list" class="grid search-grid"></div>
           </div>
         </section>
       </div>
@@ -39,7 +46,6 @@
     <div id="app-footer"></div>
 
     <script src="../shared/js/utils.js"></script>
-    <script src="../shared/js/data.js"></script>
     <script src="../shared/js/router.js"></script>
     <script src="../shared/js/render.js"></script>
     <script src="../shared/js/api.js"></script>

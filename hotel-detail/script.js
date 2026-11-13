@@ -135,57 +135,53 @@ async function initHotelDetail() {
       hotel.images && hotel.images.length ? hotel.images[0] : "";
 
     // ===== GIỮ LAYOUT CŨ CỦA BẠN (gallery + thumbs + map + 2 nút) =====
+    const esc = (t) => {
+      const d = document.createElement("div");
+      d.textContent = t == null ? "" : String(t);
+      return d.innerHTML;
+    };
+    const images = hotel.images && hotel.images.length ? hotel.images : [""];
+
     section.innerHTML = `
       <div class="hotel-detail-gallery">
         <div class="hotel-gallery-main">
-          <img id="hotel-main-image" src="${mainImage}" alt="${hotel.name}" />
+          <img id="hotel-main-image" src="${esc(images[0])}" alt="${esc(hotel.name)}" />
         </div>
-        <div class="hotel-gallery-thumbs">
-          ${
-            hotel.images && hotel.images.length
-              ? hotel.images
+        ${
+          images.length > 1
+            ? `<div class="hotel-gallery-thumbs">
+                ${images
                   .map(
-                    (img) =>
-                      `<img src="${img}" alt="${hotel.name}" data-thumb-image="${img}" />`
+                    (img, i) =>
+                      `<img src="${esc(img)}" alt="${esc(hotel.name)} photo ${i + 1}" data-thumb-image="${esc(img)}" class="${i === 0 ? "active" : ""}" />`
                   )
-                  .join("")
-              : ""
-          }
-        </div>
+                  .join("")}
+              </div>`
+            : ""
+        }
       </div>
 
-      <div class="hotel-detail-info">
-        <h1>${hotel.name}</h1>
-        <div class="hotel-detail-meta">
-          <span>${hotel.location}</span> •
-          <span>${Number(hotel.rating || 0).toFixed(1)}★ rating</span>
-        </div>
-        <p class="hotel-detail-description">
-          ${hotel.description || ""}
-        </p>
-        <div class="hotel-detail-price">
-          ${
-            window.Utils && Utils.formatPrice
-              ? Utils.formatPrice(hotel.price)
-              : hotel.price.toLocaleString() + " VND"
-          }
-          <span class="text-muted">/ night, per guest</span>
+      <aside class="hotel-detail-info">
+        <span class="hotel-detail-location">📍 ${esc(hotel.location)}</span>
+        <h1>${esc(hotel.name)}</h1>
+        <div class="hotel-detail-rating">
+          <span class="rating-pill">★ ${Number(hotel.rating || 0).toFixed(1)}</span>
+          <span class="text-muted">Guest rating</span>
         </div>
 
-        <div class="hotel-detail-cta">
-          <button class="btn btn-gold" id="btn-book-now" type="button">
-            Book now
-          </button>
-          <button class="btn btn-outline" id="btn-back-search" type="button">
-            Back to search
-          </button>
-        </div>
+        <p class="hotel-detail-description">${esc(hotel.description || "No description yet.")}</p>
 
-        <div class="hotel-map-placeholder">
-          Map preview (mock): Located in ${hotel.location}.
-          Replace with interactive map later.
+        <div class="hotel-booking-box">
+          <div class="hotel-detail-price">
+            ${Utils.formatPrice(Number(hotel.price))}
+            <span>/ guest / night</span>
+          </div>
+          <div class="hotel-detail-cta">
+            <button class="btn btn-gold btn-full" id="btn-book-now" type="button">Book now</button>
+            <button class="btn btn-outline btn-full" id="btn-back-search" type="button">Back to search</button>
+          </div>
         </div>
-      </div>
+      </aside>
     `;
 
     // ===== THUMBNAIL -> đổi ảnh main =====
@@ -197,6 +193,7 @@ async function initHotelDetail() {
         const src = thumb.getAttribute("data-thumb-image");
         if (src && mainImgEl) {
           mainImgEl.src = src;
+          thumbs.forEach((t) => t.classList.toggle("active", t === thumb));
         }
       });
     });

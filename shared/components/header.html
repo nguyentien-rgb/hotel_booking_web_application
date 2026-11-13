@@ -29,14 +29,31 @@
       >
         Sign up
       </a>
-      <button
-        id="header-user-btn"
-        class="header-link hidden"
-        type="button"
-        style="border-color: rgba(10, 10, 10, 0.8)"
-      >
-        My Profile
-      </button>
+      <!-- Menu người dùng: rê chuột (hoặc bấm) vào tên để mở -->
+      <div class="user-menu hidden" id="header-user-menu">
+        <button
+          id="header-user-btn"
+          class="user-menu-trigger"
+          type="button"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+          <span class="user-avatar" id="header-user-avatar">?</span>
+          <span id="header-user-name">Hi</span>
+          <span class="user-caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="user-menu-dropdown" role="menu">
+          <div class="user-menu-info">
+            <strong id="user-menu-fullname"></strong>
+            <span id="user-menu-email"></span>
+            <span class="user-menu-role" id="user-menu-role"></span>
+          </div>
+          <a href="#" id="user-menu-home" class="user-menu-item" role="menuitem">My profile</a>
+          <button type="button" id="user-menu-logout" class="user-menu-item user-menu-logout" role="menuitem">
+            Logout
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </header>

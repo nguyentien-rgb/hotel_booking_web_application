@@ -12,23 +12,28 @@
     <div id="app-header"></div>
 
     <main class="page">
-      <div class="container">
-        <section class="profile-layout">
-          <div class="card card-soft profile-main">
-            <h1 class="page-title">My profile</h1>
-            <p class="page-subtitle">Manage your account and view your recent luxury stays.</p>
-
-            <div id="profile-user-info" class="profile-user-info">
-              <!-- filled by JS -->
-            </div>
-            <button class="btn btn-outline" id="profile-logout-btn">Logout</button>
+      <div class="container profile-page">
+        <section class="card profile-head">
+          <div class="profile-avatar" id="profile-avatar">?</div>
+          <div>
+            <h1 class="profile-name" id="profile-name">...</h1>
+            <p class="profile-email" id="profile-email"></p>
+            <p class="profile-email" id="profile-phone"></p>
           </div>
+        </section>
 
-          <div class="card profile-bookings">
-            <h3 style="margin-top: 0">Recent bookings</h3>
-            <div id="profile-booking-list" class="profile-booking-list">
-              <!-- filled by JS -->
-            </div>
+        <section class="card">
+          <div class="profile-bookings-head">
+            <h2>My bookings</h2>
+            <nav class="profile-tabs" id="profile-tabs">
+              <button class="profile-tab active" data-tab="all" type="button">All</button>
+              <button class="profile-tab" data-tab="upcoming" type="button">Upcoming</button>
+              <button class="profile-tab" data-tab="past" type="button">Past</button>
+              <button class="profile-tab" data-tab="cancelled" type="button">Cancelled</button>
+            </nav>
+          </div>
+          <div id="profile-booking-list">
+            <p class="text-muted">Loading bookings...</p>
           </div>
         </section>
       </div>
@@ -37,7 +42,6 @@
     <div id="app-footer"></div>
 
     <script src="../shared/js/utils.js"></script>
-    <script src="../shared/js/data.js"></script>
     <script src="../shared/js/router.js"></script>
     <script src="../shared/js/render.js"></script>
     <script src="../shared/js/api.js"></script>

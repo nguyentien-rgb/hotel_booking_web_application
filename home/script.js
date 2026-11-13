@@ -1,144 +1,81 @@
-/*document.addEventListener("DOMContentLoaded", function () {
-  Render.initSharedLayout("../shared", "home");
-  initHomePage();
-});
-
-function initHomePage() {
-  const featuredContainer = document.getElementById("home-hotel-list");
-  const allHotels = window.HOTELS || [];
-  const hotels = allHotels.slice(0, 4);
-
-  // === there is no data here ===
-  if (!allHotels.length) {
-    featuredContainer.innerHTML =
-      '<p class="text-muted">No hotel data loaded yet. Connect your frontend to a real API to display hotels here.</p>';
-    return;
-  }
-
-  Render.renderHotelGrid(hotels, featuredContainer).then(() => {
-    setupHotelCardEvents(featuredContainer);
-  });
-
-  const searchForm = document.getElementById("home-search-form");
-  const searchInput = document.getElementById("home-search-input");
-
-  if (searchForm) {
-    searchForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const q = searchInput.value || "";
-      Router.goToSearch(q);
-    });
-  }
-}
-
-
-function setupHotelCardEvents(container) {
-  container.addEventListener("click", function (e) {
-    const target = e.target;
-    if (!(target instanceof HTMLElement)) return;
-
-    const card = target.closest(".hotel-card");
-    if (!card) return;
-
-    const id = card.getAttribute("data-hotel-id");
-    if (!id) return;
-
-    if (target.classList.contains("btn-view-detail")) {
-      Router.goToHotelDetail(id);
-    } else if (target.classList.contains("btn-book-now")) {
-      Router.goToBooking(id);
-    }
-  });
-}
-*/
-// /home/script.js
+// home/script.js — trang chủ
 document.addEventListener("DOMContentLoaded", () => {
-  // header/footer + dark mode… nếu bạn đang dùng
-  if (window.Render && Render.initSharedLayout) {
-    Render.initSharedLayout("../shared", "home");
-  }
-  initHomePage();
+  Render.initSharedLayout("../shared", "home");
+  initSearchForm();
+  loadFeaturedHotels();
 });
 
-async function initHomePage() {
-  const featuredContainer = document.getElementById("home-hotel-list");
-  const searchForm = document.getElementById("home-search-form");
-  const searchInput = document.getElementById("home-search-input");
+// Ô tìm kiếm → sang trang Search kèm ?q=
+function initSearchForm() {
+  const form = document.getElementById("home-search-form");
+  const input = document.getElementById("home-search-input");
+  if (!form || !input) return;
 
-  if (!featuredContainer) {
-    console.warn("Không tìm thấy #home-hotel-list");
-    return;
-  }
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    Router.goToSearch(input.value);
+  });
+}
 
-  featuredContainer.innerHTML = `<p class="text-muted">Loading hotels...</p>`;
+async function loadFeaturedHotels() {
+  const listEl = document.getElementById("home-hotel-list");
+  if (!listEl) return;
+
+  Render.renderSkeleton(listEl, 3);
 
   try {
-    // LẤY DATA TỪ BACKEND (MySQL)
     const hotels = await Api.fetchHotels();
 
+    fillHeroStats(hotels);
+
     if (!hotels.length) {
-      featuredContainer.innerHTML =
-        `<p class="text-muted">No hotels in database.</p>`;
+      listEl.innerHTML = '<p class="text-muted">No hotels available yet.</p>';
       return;
     }
 
-    // Featured: lấy 4 hotel đầu
-    const featured = hotels.slice(0, 4);
-
-    // Nếu bạn có Render.renderHotelGrid thì dùng, không thì fallback tự render
-    if (window.Render && typeof Render.renderHotelGrid === "function") {
-      await Render.renderHotelGrid(featured, featuredContainer);
-    } else {
-      featuredContainer.innerHTML = featured
-        .map(
-          (h) => `
-          <article class="hotel-card" data-hotel-id="${h.id}">
-            <div class="hotel-card-image">
-              <img src="${(h.images && h.images[0]) || ""}" alt="${h.name}">
-            </div>
-            <div class="hotel-card-body">
-              <h3>${h.name}</h3>
-              <p class="hotel-location">${h.location}</p>
-              <p class="hotel-price">${h.price.toLocaleString()} VND / night</p>
-              <p class="hotel-rating">⭐ ${h.rating}</p>
-              <button class="btn-primary view-detail" data-hotel-id="${h.id}">
-                View details
-              </button>
-            </div>
-          </article>`
-        )
-        .join("");
-    }
-
-    // Click card hoặc nút "View details" -> sang trang hotel-detail
-    featuredContainer.addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-hotel-id]");
-      if (!btn) return;
-      const id = btn.getAttribute("data-hotel-id");
-      window.location.href = `../hotel-detail/index.html?id=${encodeURIComponent(
-        id
-      )}`;
-    });
+    // API đã sắp xếp theo đánh giá giảm dần → lấy 6 khách sạn đầu
+    await Render.renderHotelGrid(hotels.slice(0, 6), listEl);
   } catch (err) {
-    console.error("Lỗi khi load hotels ở home:", err);
-    featuredContainer.innerHTML =
-      `<p class="text-muted">Failed to load hotels from server.</p>`;
+    console.error("Error loading hotels:", err);
+    listEl.innerHTML = `<p class="form-error">${err.message}</p>`;
   }
 
-  // Search -> chuyển sang trang /search/ với query
-  if (searchForm && searchInput) {
-    searchForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const q = searchInput.value.trim();
-      if (!q) return;
-      // Nếu có Router.goToSearch thì dùng, không thì dùng query string
-      if (window.Router && typeof Router.goToSearch === "function") {
-        Router.goToSearch(q);
-      } else {
-        window.location.href = `../search/index.html?q=${encodeURIComponent(q)}`;
-      }
-    });
-  }
+  // Bấm "Book now" → đặt phòng (chưa đăng nhập sẽ bị đưa sang login)
+  // Bấm chỗ khác trên thẻ → xem chi tiết
+  listEl.addEventListener("click", (e) => {
+    const card = e.target.closest(".hotel-card");
+    const id = card && card.getAttribute("data-hotel-id");
+    if (!id) return;
+
+    if (e.target.closest(".btn-book-now")) Router.goToBooking(id);
+    else Router.goToHotelDetail(id);
+  });
 }
 
+// Số liệu trên ảnh bìa lấy từ dữ liệu thật thay vì ghi cứng
+function fillHeroStats(hotels) {
+  const countEl = document.getElementById("stat-hotels");
+  const ratingEl = document.getElementById("stat-rating");
+  const metaEl = document.getElementById("home-hero-meta");
 
+  if (countEl) countEl.textContent = hotels.length;
+
+  if (ratingEl && hotels.length) {
+    const avg = hotels.reduce((sum, h) => sum + Number(h.rating), 0) / hotels.length;
+    ratingEl.textContent = avg.toFixed(1) + "★";
+  }
+
+  // "Handpicked stays in Sa Pa, Hạ Long, ... and more."
+  if (metaEl && hotels.length) {
+    const places = [
+      ...new Set(
+        hotels
+          .map((h) => (h.location || "").split(",")[0].trim())
+          .filter(Boolean)
+      ),
+    ];
+    const shown = places.slice(0, 4).join(", ");
+    metaEl.textContent =
+      "Handpicked stays in " + shown + (places.length > 4 ? " and more." : ".");
+  }
+}

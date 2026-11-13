@@ -65,7 +65,7 @@ public class BookingsController : ApiControllerBase
             .Select(b => new BookingDto(
                 b.Id, b.HotelId, b.Hotel!.Name, b.Hotel.Location,
                 b.CheckIn, b.CheckOut, b.Guests, b.Nights, b.Total,
-                b.PaymentMethod, b.Status, b.CreatedAt))
+                b.PaymentMethod, b.Status, b.CreatedAt, b.Hotel.Image1))
             .ToListAsync();
 
         return Ok(bookings);

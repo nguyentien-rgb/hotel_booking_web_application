@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>My Hotels — Luxury Hotel Booking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../shared/css/global.css" />
+    <link rel="stylesheet" href="../shared/css/dark-mode.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app-header"></div>
+
+    <main class="page">
+      <div class="container owner-page">
+        <section class="card card-soft owner-intro">
+          <div>
+            <h1 class="page-title">Hotel owner dashboard</h1>
+            <p class="page-subtitle" id="owner-welcome">Manage your hotels and incoming bookings.</p>
+          </div>
+        </section>
+
+        <!-- ===== HỒ SƠ CHỦ KHÁCH SẠN ===== -->
+        <section class="card owner-section">
+          <div class="section-head">
+            <h2>Owner profile</h2>
+          </div>
+          <form id="profile-form" class="profile-form">
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Name</label>
+                <input id="pf-name" type="text" disabled />
+              </div>
+              <div class="form-field">
+                <label>Email</label>
+                <input id="pf-email" type="email" disabled />
+              </div>
+              <div class="form-field">
+                <label for="pf-phone">Phone number *</label>
+                <input id="pf-phone" type="tel" required maxlength="15" />
+              </div>
+              <div class="form-field">
+                <label for="pf-business">Business name</label>
+                <input id="pf-business" type="text" maxlength="200" />
+              </div>
+              <div class="form-field">
+                <label for="pf-tax">Tax code</label>
+                <input id="pf-tax" type="text" maxlength="14" placeholder="10–14 digits" />
+              </div>
+            </div>
+            <div class="form-error" id="profile-error"></div>
+            <div class="form-buttons">
+              <button class="btn btn-gold" type="submit" id="profile-save-btn">Save profile</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- ===== KHÁCH SẠN CỦA TÔI ===== -->
+        <section class="card owner-section">
+          <div class="section-head">
+            <h2>My hotel</h2>
+            <button class="btn btn-gold btn-sm" id="hotel-add-btn" type="button">+ Add hotel</button>
+          </div>
+          <p class="text-muted section-note">
+            Each owner manages one hotel. New or edited hotels are hidden from customers until an admin approves them.
+          </p>
+
+          <form id="hotel-form" class="hotel-form hidden">
+            <h3 id="hotel-form-title">Add hotel</h3>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="hf-name">Hotel name *</label>
+                <input id="hf-name" type="text" required maxlength="200" />
+              </div>
+              <div class="form-field">
+                <label for="hf-location">Location</label>
+                <input id="hf-location" type="text" maxlength="200" />
+              </div>
+              <div class="form-field">
+                <label for="hf-price">Price per guest / night (₫) *</label>
+                <input id="hf-price" type="number" min="1" step="1000" required />
+              </div>
+              <div class="form-field">
+                <label for="hf-image1">Image URL 1</label>
+                <input id="hf-image1" type="url" maxlength="500" />
+              </div>
+              <div class="form-field">
+                <label for="hf-image2">Image URL 2</label>
+                <input id="hf-image2" type="url" maxlength="500" />
+              </div>
+              <div class="form-field form-field-wide">
+                <label for="hf-description">Description</label>
+                <textarea id="hf-description" rows="3"></textarea>
+              </div>
+            </div>
+            <div class="form-error" id="hotel-form-error"></div>
+            <div class="form-buttons">
+              <button class="btn btn-gold" type="submit" id="hotel-save-btn">Save</button>
+              <button class="btn btn-outline" type="button" id="hotel-cancel-btn">Cancel</button>
+            </div>
+          </form>
+
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Hotel</th>
+                  <th>Price</th>
+                  <th>Rating</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="hotel-table-body">
+                <tr><td colspan="5" class="text-muted">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ===== BOOKING ===== -->
+        <section class="card owner-section">
+          <div class="section-head">
+            <h2>Bookings</h2>
+            <select id="booking-filter">
+              <option value="">All</option>
+              <option value="pending" selected>Waiting for confirmation</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Hotel</th>
+                  <th>Guest</th>
+                  <th>Stay</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="booking-table-body">
+                <tr><td colspan="7" class="text-muted">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div id="app-footer"></div>
+
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/router.js"></script>
+    <script src="../shared/js/render.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

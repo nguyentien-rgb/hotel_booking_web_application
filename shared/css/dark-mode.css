@@ -1,27 +1,54 @@
+/* ===== Chế độ tối: chỉ đổi biến màu, các thành phần tự ăn theo ===== */
 body.dark-theme {
-  --color-bg: #050509;
-  --color-surface: #111827;
-  --color-surface-soft: #1f2933;
-  --color-text: #f9fafb;
-  --color-text-muted: #9ca3af;
-  --color-border: #374151;
-  --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.8);
-  background: radial-gradient(circle at top, #400c3f 0, #57085c 60%, #272628 100%);
+  --color-bg: #0b0f19;
+  --color-surface: #161d2b;
+  --color-surface-soft: #1c2433;
+  --color-text: #e5e7eb;
+  --color-text-muted: #94a3b8;
+  --color-border: #2b3445;
+  --color-accent: #d4b475;
+  --color-accent-dark: #e3c88a;
+  --color-link: #e3c88a;
+  --color-input-bg: #0f1522;
+  --color-hover: rgba(255, 255, 255, 0.06);
+  --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.5);
+  --body-bg: radial-gradient(circle at top, #1f2937 0, #0f172a 55%, #0b0f19 100%);
+  --card-soft-bg: linear-gradient(145deg, #1e2636, #131a27);
+  color-scheme: dark;
 }
 
 body.dark-theme .site-header {
-  background: linear-gradient(
-    90deg,
-    rgba(24, 20, 22, 0.96),
-    rgba(33, 30, 33, 0.98),
-    rgba(0, 0, 0, 0.96)
-  );
+  background: linear-gradient(90deg, rgba(8, 10, 16, 0.96), rgba(17, 22, 32, 0.98), rgba(8, 10, 16, 0.96));
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
 }
 
 body.dark-theme .site-footer {
-  background: #020617;
+  background: #070a12;
 }
 
-body.dark-theme .card-soft {
-  background: linear-gradient(145deg, #1f2933, #020617);
+body.dark-theme .hotel-card {
+  border-color: var(--color-border);
 }
+
+body.dark-theme .hotel-card:hover {
+  border-color: rgba(212, 180, 117, 0.6);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+}
+
+/* Badge trạng thái: nền tối, chữ sáng thay vì pastel chói */
+body.dark-theme .status-pending { background: rgba(245, 158, 11, 0.16); color: #fcd34d; }
+body.dark-theme .status-confirmed,
+body.dark-theme .status-approved,
+body.dark-theme .status-active { background: rgba(34, 197, 94, 0.16); color: #86efac; }
+body.dark-theme .status-cancelled,
+body.dark-theme .status-rejected,
+body.dark-theme .status-locked { background: rgba(239, 68, 68, 0.16); color: #fca5a5; }
+body.dark-theme .status-completed { background: rgba(129, 140, 248, 0.18); color: #c7d2fe; }
+
+body.dark-theme .btn-danger { color: #f87171; border-color: #f87171; }
+body.dark-theme .btn-danger:hover { background: #dc2626; color: #fff; }
+
+body.dark-theme .rating-pill { background: #e3c88a; color: #111827; }
+
+body.dark-theme .empty-state { background: var(--color-surface); }

@@ -33,9 +33,20 @@ public class AuthController : ApiControllerBase
         {
             Name = req.Name.Trim(),
             Email = email,
+            Phone = req.Phone.Trim(),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
             Role = role
         };
+
+        // Owner: tạo luôn hồ sơ chủ khách sạn (lưu cùng 1 lần SaveChanges)
+        if (role == Roles.Owner)
+        {
+            user.OwnerProfile = new OwnerProfile
+            {
+                BusinessName = string.IsNullOrWhiteSpace(req.BusinessName) ? null : req.BusinessName.Trim(),
+                TaxCode = string.IsNullOrWhiteSpace(req.TaxCode) ? null : req.TaxCode.Trim()
+            };
+        }
 
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
@@ -64,9 +75,9 @@ public class AuthController : ApiControllerBase
     {
         var user = await _db.Users.FindAsync(CurrentUserId);
         if (user == null) return Error(404, "User not found.");
-        return Ok(new UserDto(user.Id, user.Name, user.Email, user.Role));
+        return Ok(new UserDto(user.Id, user.Name, user.Email, user.Role, user.Phone));
     }
 
     private AuthResponse ToResponse(User user) =>
-        new(_tokens.CreateToken(user), new UserDto(user.Id, user.Name, user.Email, user.Role));
+        new(_tokens.CreateToken(user), new UserDto(user.Id, user.Name, user.Email, user.Role, user.Phone));
 }

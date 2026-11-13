@@ -29,8 +29,31 @@
               <input type="email" id="reg-email" required />
             </div>
             <div class="form-field">
+              <label for="reg-phone">Phone number</label>
+              <input type="tel" id="reg-phone" placeholder="e.g. 0912345678" maxlength="15" required />
+            </div>
+            <div class="form-field">
               <label for="reg-password">Password</label>
               <input type="password" id="reg-password" required />
+            </div>
+            <div class="form-field">
+              <label for="reg-role">Account type</label>
+              <select id="reg-role">
+                <option value="customer">Customer</option>
+                <option value="owner">Hotel Owner</option>
+              </select>
+            </div>
+            <!-- Chỉ hiện khi chọn "Hotel owner" -->
+            <div id="owner-fields" class="owner-fields hidden">
+              <p class="owner-fields-title">Owner information</p>
+              <div class="form-field">
+                <label for="reg-business">Business name</label>
+                <input type="text" id="reg-business" placeholder="Your hotel or company name" maxlength="200" />
+              </div>
+              <div class="form-field">
+                <label for="reg-tax">Tax code</label>
+                <input type="text" id="reg-tax" placeholder="10–14 digits (optional)" maxlength="14" />
+              </div>
             </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-gold btn-full">Create account</button>
@@ -48,7 +71,6 @@
     <div id="app-footer"></div>
 
     <script src="../shared/js/utils.js"></script>
-    <script src="../shared/js/data.js"></script>
     <script src="../shared/js/router.js"></script>
     <script src="../shared/js/render.js"></script>
     <script src="../shared/js/api.js"></script>

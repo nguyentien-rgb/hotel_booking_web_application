@@ -1,31 +1,166 @@
-.profile-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
-  gap: 1.4rem;
+.profile-page {
+  max-width: 860px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
 }
 
-.profile-user-info {
-  margin: 0.9rem 0 1rem;
+/* ===== Thông tin tài khoản ===== */
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #111827;
+  background: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.profile-name {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.profile-email {
+  margin: 0.15rem 0 0;
   font-size: 0.9rem;
-}
-
-.profile-booking-item {
-  padding: 0.7rem 0;
-  border-bottom: 1px solid var(--color-border);
-  font-size: 0.9rem;
-}
-
-.profile-booking-item:last-child {
-  border-bottom: none;
-}
-
-.profile-booking-meta {
-  font-size: 0.82rem;
   color: var(--color-text-muted);
 }
 
-@media (max-width: 900px) {
-  .profile-layout {
-    grid-template-columns: minmax(0, 1fr);
+/* ===== Booking ===== */
+.profile-bookings-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.4rem;
+}
+
+.profile-bookings-head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.profile-tabs {
+  display: flex;
+  gap: 1.1rem;
+}
+
+.profile-tab {
+  border: none;
+  background: none;
+  padding: 0.3rem 0;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.profile-tab:hover {
+  color: var(--color-text);
+}
+
+.profile-tab.active {
+  color: var(--color-text);
+  font-weight: 600;
+  border-bottom-color: var(--color-accent);
+}
+
+.booking-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.booking-row:last-child {
+  border-bottom: none;
+}
+
+.booking-row-image {
+  width: 72px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
+.booking-row-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.booking-row-name {
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.booking-row-name:hover {
+  color: var(--color-accent-dark);
+}
+
+.booking-row-meta {
+  margin-top: 0.2rem;
+  font-size: 0.84rem;
+  color: var(--color-text-muted);
+}
+
+.booking-row-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.booking-row-total {
+  font-weight: 600;
+}
+
+.booking-row-cancel {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--color-danger);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.booking-row-cancel:hover {
+  text-decoration: underline;
+}
+
+.profile-empty {
+  padding: 1.6rem 0;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 600px) {
+  .booking-row {
+    flex-wrap: wrap;
+  }
+
+  .booking-row-side {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
 }

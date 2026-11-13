@@ -32,4 +32,21 @@ public record BookingDto(
     decimal Total,
     string? PaymentMethod,
     string Status,
+    DateTime CreatedAt,
+    string? HotelImage);
+
+// Booking hiển thị cho chủ khách sạn: có thêm thông tin khách đặt
+public record OwnerBookingDto(
+    int Id,
+    int HotelId,
+    string HotelName,
+    string GuestName,
+    string GuestEmail,
+    DateOnly CheckIn,
+    DateOnly CheckOut,
+    int Guests,
+    int Nights,
+    decimal Total,
+    string? PaymentMethod,
+    string Status,
     DateTime CreatedAt);

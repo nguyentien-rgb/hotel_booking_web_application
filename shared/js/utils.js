@@ -113,7 +113,45 @@
     localStorage.setItem(STORAGE_KEYS.THEME, isDark ? "dark" : "light");
   }
 
+  /* Bỏ dấu tiếng Việt để tìm kiếm: "Hà Nội" → "ha noi" */
+  function normalizeText(text) {
+    return String(text || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D")
+      .toLowerCase()
+      .trim();
+  }
+
+  /* Ngày hôm nay dạng yyyy-mm-dd theo giờ máy (dùng cho input type=date) */
+  function todayIso(offsetDays) {
+    const d = new Date();
+    d.setDate(d.getDate() + (offsetDays || 0));
+    const pad = (n) => String(n).padStart(2, "0");
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+
+  /* Thông báo nhỏ góc màn hình, thay cho alert() */
+  function toast(message, type) {
+    let box = document.getElementById("toast-container");
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "toast-container";
+      document.body.appendChild(box);
+    }
+    const el = document.createElement("div");
+    el.className = "toast toast-" + (type || "info");
+    el.textContent = message;
+    box.appendChild(el);
+    setTimeout(() => el.classList.add("toast-hide"), 3200);
+    setTimeout(() => el.remove(), 3600);
+  }
+
   window.Utils = {
+    normalizeText,
+    todayIso,
+    toast,
     formatPrice,
     getQueryParam,
     calcNights,

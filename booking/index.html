@@ -4,11 +4,8 @@
     <meta charset="UTF-8" />
     <title>Booking — Luxury Hotel Booking</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!-- Global styles -->
     <link rel="stylesheet" href="../shared/css/global.css" />
     <link rel="stylesheet" href="../shared/css/dark-mode.css" />
-    <!-- Page styles -->
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -17,93 +14,57 @@
     <main class="page">
       <div class="container">
         <header class="page-header">
-          <h1 class="page-title">Booking details</h1>
-          <p class="page-subtitle">
-            Review your stay and confirm your booking details before payment.
-          </p>
+          <h1 class="page-title">Your stay</h1>
+          <p class="page-subtitle">Choose your dates and number of guests.</p>
         </header>
 
         <section class="booking-layout">
-          <!-- Cột bên trái: thông tin khách sạn đã chọn -->
-          <div
-            id="booking-selected-hotel"
-            class="card card-soft booking-summary"
-          >
-            <!-- filled by JS -->
+          <!-- Khách sạn đã chọn -->
+          <div id="booking-selected-hotel" class="card booking-hotel">
+            <p class="text-muted">Loading hotel...</p>
           </div>
 
-          <!-- Cột bên phải: form ngày / khách / tổng tiền -->
-          <div class="card booking-form-card">
-            <h3 style="margin-top: 0">Stay details</h3>
+          <!-- Ngày, số khách, tổng tiền -->
+          <form id="booking-stay-form" class="card booking-form" novalidate>
+            <h2>Stay details</h2>
 
-            <form id="booking-stay-form" class="form-vertical">
-              <div class="form-row">
-                <div class="form-field">
-                  <label for="booking-check-in">Check-in</label>
-                  <input type="date" id="booking-check-in" required />
-                </div>
-
-                <div class="form-field">
-                  <label for="booking-check-out">Check-out</label>
-                  <input type="date" id="booking-check-out" required />
-                </div>
-              </div>
-
+            <div class="date-row">
               <div class="form-field">
-                <label for="booking-guests">Guests</label>
-                <input
-                  type="number"
-                  id="booking-guests"
-                  min="1"
-                  value="2"
-                  required
-                />
+                <label for="booking-check-in">Check-in</label>
+                <input type="date" id="booking-check-in" required />
               </div>
-
               <div class="form-field">
-                <label>Price summary</label>
-                <div
-                  id="booking-price-summary"
-                  class="text-muted"
-                  style="font-size: 0.88rem"
-                >
-                  Select dates to calculate your stay.
-                </div>
+                <label for="booking-check-out">Check-out</label>
+                <input type="date" id="booking-check-out" required />
               </div>
+            </div>
 
-              <div class="form-actions">
-                <button
-                  type="button"
-                  class="btn btn-outline"
-                  id="booking-btn-back"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  class="btn btn-gold"
-                  id="booking-btn-proceed"
-                >
-                  Proceed to payment
-                </button>
+            <div class="form-field">
+              <label for="booking-guests">Guests</label>
+              <div class="stepper">
+                <button type="button" class="stepper-btn" id="guests-minus" aria-label="Fewer guests">−</button>
+                <input type="number" id="booking-guests" min="1" max="20" value="2" />
+                <button type="button" class="stepper-btn" id="guests-plus" aria-label="More guests">+</button>
               </div>
+            </div>
 
-              <div id="booking-error" class="form-error"></div>
-            </form>
-          </div>
+            <div class="price-box" id="booking-price-summary">
+              <p class="text-muted">Select your dates to see the total.</p>
+            </div>
+
+            <button type="submit" class="btn btn-gold btn-full" id="booking-btn-proceed">Continue to payment</button>
+            <button type="button" class="btn btn-ghost btn-full" id="booking-btn-back">Back</button>
+          </form>
         </section>
       </div>
     </main>
 
     <div id="app-footer"></div>
 
-    <!-- Shared scripts -->
     <script src="../shared/js/utils.js"></script>
     <script src="../shared/js/router.js"></script>
     <script src="../shared/js/render.js"></script>
     <script src="../shared/js/api.js"></script>
-
-    <!-- Page script -->
     <script src="script.js"></script>
   </body>
 </html>

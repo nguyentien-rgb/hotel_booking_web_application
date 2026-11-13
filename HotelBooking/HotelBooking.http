@@ -1,6 +1,81 @@
-@HotelBooking_HostAddress = http://localhost:5273
+@host = http://localhost:4000
 
-GET {{HotelBooking_HostAddress}}/api/hotels
-Accept: application/json
+### 1. Đăng nhập owner, copy giá trị "token" trong kết quả
+POST {{host}}/api/auth/login
+Content-Type: application/json
 
-###
+{
+  "email": "owner1@hotel.com",
+  "password": "owner123"
+}
+
+### Dán token vừa copy vào dòng dưới (không có dấu ngoặc kép)
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJIb3RlbEJvb2tpbmdDbGllbnQiLCJpc3MiOiJIb3RlbEJvb2tpbmciLCJleHAiOjE3OTQ1NjA5MTMsInN1YiI6IjIiLCJuYW1lIjoiQ2jhu6cga2jDoWNoIHPhuqFuIEEiLCJlbWFpbCI6Im93bmVyMUBob3RlbC5jb20iLCJyb2xlIjoib3duZXIiLCJpYXQiOjE3OTQ1NTM3MTMsIm5iZiI6MTc5NDU1MzcxM30.NRhllm6VBiwumhGcwhLpBx3IyddCfIyY-KfPV9ONIbg
+
+### 2. Xem khách sạn của mình
+GET {{host}}/api/owner/hotels
+Authorization: Bearer {{token}}
+
+### 3. Thêm khách sạn mới
+POST {{host}}/api/owner/hotels
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Ninh Binh Riverside Homestay",
+  "location": "Tam Cốc, Ninh Bình",
+  "price": 650000,
+  "description": "Homestay ven sông, gần Tràng An.",
+  "image1": "https://picsum.photos/seed/hotel5a/800/500"
+}
+
+### 4. Sửa khách sạn (đổi 1 thành id của khách sạn muốn sửa)
+PUT {{host}}/api/owner/hotels/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Khách sạn Hạ Long Bay View",
+  "location": "Hạ Long, Quảng Ninh",
+  "price": 1250000,
+  "description": "Khách sạn view vịnh, gần bãi tắm Bãi Cháy.",
+  "image1": "https://picsum.photos/seed/hotel1a/800/500",
+  "image2": "https://picsum.photos/seed/hotel1b/800/500"
+}
+
+### 5. Sửa khách sạn của owner khác (id 3 là của owner2) → phải ra 404
+PUT {{host}}/api/owner/hotels/3
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Thu sua cua nguoi khac",
+  "price": 1
+}
+
+### 6. Không có token → phải ra 401
+GET {{host}}/api/owner/hotels
+
+### ===== BƯỚC 2: OWNER XỬ LÝ BOOKING =====
+### Trước khi chạy: đăng nhập web bằng user@hotel.com / user123,
+### đặt 1 phòng ở "Hanoi Old Quarter Hotel" (khách sạn của owner1)
+
+### 7. Xem booking vào khách sạn của mình
+GET {{host}}/api/owner/bookings
+Authorization: Bearer {{token}}
+
+### 8. Chỉ xem booking đang chờ
+GET {{host}}/api/owner/bookings?status=pending
+Authorization: Bearer {{token}}
+
+### 9. Xác nhận booking (đổi 1 thành id booking lấy ở request 7)
+PUT {{host}}/api/owner/bookings/1/confirm
+Authorization: Bearer {{token}}
+
+### 10. Xác nhận lại lần nữa → phải ra 400 (đã confirmed rồi)
+PUT {{host}}/api/owner/bookings/1/confirm
+Authorization: Bearer {{token}}
+
+### 11. Từ chối booking (dùng một booking khác đang pending)
+PUT {{host}}/api/owner/bookings/2/reject
+Authorization: Bearer {{token}}

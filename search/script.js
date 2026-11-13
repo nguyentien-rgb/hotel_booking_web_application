@@ -1,422 +1,236 @@
-/*document.addEventListener("DOMContentLoaded", function () {
+// search/script.js — tìm kiếm và lọc khách sạn
+// Tải danh sách 1 lần từ API, sau đó lọc ngay trên trình duyệt mỗi khi người dùng đổi bộ lọc.
+
+let ALL_HOTELS = [];
+
+document.addEventListener("DOMContentLoaded", function () {
   Render.initSharedLayout("../shared", "search");
   initSearchPage();
 });
 
 async function initSearchPage() {
-  await loadSearchBar();
-  await loadFilterSidebar();
-  const initialQuery = Utils.getQueryParam("q") || "";
-  const nameInput = document.getElementById("search-name");
-  if (nameInput) nameInput.value = initialQuery;
-
-  performSearch();
-  setupEventHandlers();
-}
-
-function loadSearchBar() {
-  const root = document.getElementById("search-bar-root");
-  if (!root) return Promise.resolve();
-  return fetch("../shared/components/search-bar.html")
-    .then((r) => r.text())
-    .then((html) => {
-      root.innerHTML = html;
-    });
-}
-
-function loadFilterSidebar() {
-  const root = document.getElementById("filter-sidebar-root");
-  if (!root) return Promise.resolve();
-  return fetch("../shared/components/filter-sidebar.html")
-    .then((r) => r.text())
-    .then((html) => {
-      root.innerHTML = html;
-    });
-}
-
-function setupEventHandlers() {
-  const searchForm = document.getElementById("search-bar-form");
-  if (searchForm) {
-    searchForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      performSearch();
-    });
-  }
-
-  const applyBtn = document.getElementById("filter-apply-btn");
-  const resetBtn = document.getElementById("filter-reset-btn");
-
-  if (applyBtn) {
-    applyBtn.addEventListener("click", performSearch);
-  }
-  if (resetBtn) {
-    resetBtn.addEventListener("click", function () {
-      ["filter-location", "filter-min-price", "filter-max-price", "filter-rating", "filter-sort"].forEach(
-        function (id) {
-          const el = document.getElementById(id);
-          if (!el) return;
-          if (el.tagName === "SELECT") el.value = "";
-          else el.value = "";
-        }
-      );
-      performSearch();
-    });
-  }
-}
-
-function performSearch() {
-  const hotels = window.HOTELS || [];
-  const listEl = document.getElementById("search-results-list");
-  const metaEl = document.getElementById("search-results-meta");
-
-  // === there is no data here ===
-  if (!hotels.length) {
-    if (metaEl) {
-      metaEl.textContent =
-        "No hotel data loaded. Connect this page to your backend API to fetch real hotels.";
-    }
-    if (listEl) {
-      listEl.innerHTML = "";
-    }
-    return;
-  }
-
-  const name = (document.getElementById("search-name")?.value || "").toLowerCase();
-  const searchLocation = document.getElementById("search-location")?.value || "";
-
-  const fLocation = document.getElementById("filter-location")?.value || "";
-  const minPriceStr = document.getElementById("filter-min-price")?.value || "";
-  const maxPriceStr = document.getElementById("filter-max-price")?.value || "";
-  const ratingStr = document.getElementById("filter-rating")?.value || "";
-  const sortBy = document.getElementById("filter-sort")?.value || "";
-
-  let results = hotels.slice();
-
-  if (name) {
-    results = results.filter((h) => h.name.toLowerCase().includes(name));
-  }
-
-  const finalLocation = searchLocation || fLocation;
-  if (finalLocation) {
-    results = results.filter((h) => h.location === finalLocation);
-  }
-
-  const minPrice = minPriceStr ? Number(minPriceStr) : null;
-  const maxPrice = maxPriceStr ? Number(maxPriceStr) : null;
-
-  if (minPrice !== null && !isNaN(minPrice)) {
-    results = results.filter((h) => h.price >= minPrice);
-  }
-  if (maxPrice !== null && !isNaN(maxPrice)) {
-    results = results.filter((h) => h.price <= maxPrice);
-  }
-
-  const rating = ratingStr ? Number(ratingStr) : null;
-  if (rating !== null && !isNaN(rating)) {
-    results = results.filter((h) => h.rating >= rating);
-  }
-
-  if (sortBy === "price-asc") {
-    results.sort((a, b) => a.price - b.price);
-  } else if (sortBy === "price-desc") {
-    results.sort((a, b) => b.price - a.price);
-  } else if (sortBy === "rating-desc") {
-    results.sort((a, b) => b.rating - a.rating);
-  }
-
-  const metaEl = document.getElementById("search-results-meta");
-  if (metaEl) {
-    if (!results.length) {
-      metaEl.textContent = "No hotels match your criteria. Try adjusting filters.";
-    } else {
-      metaEl.textContent = results.length + " luxury stays found for your search.";
-    }
-  }
+  await Promise.all([
+    loadComponent("search-bar-root", "../shared/components/search-bar.html"),
+    loadComponent("filter-sidebar-root", "../shared/components/filter-sidebar.html"),
+  ]);
 
   const listEl = document.getElementById("search-results-list");
-  Render.renderHotelGrid(results, listEl).then(function () {
-    setupResultCardEvents(listEl);
-  });
-}
+  Render.renderSkeleton(listEl, 4);
 
-function setupResultCardEvents(container) {
-  container.addEventListener("click", function (e) {
-    const target = e.target;
-    if (!(target instanceof HTMLElement)) return;
-
-    const card = target.closest(".hotel-card");
-    if (!card) return;
-    const id = card.getAttribute("data-hotel-id");
-    if (!id) return;
-
-    if (target.classList.contains("btn-view-detail")) {
-      Router.goToHotelDetail(id);
-    } else if (target.classList.contains("btn-book-now")) {
-      Router.goToBooking(id);
-    }
-  });
-}
-*/
-// /search/script.js
-// /search/script.js
-
-// Lưu toàn bộ hotel lấy từ backend để tái dùng
-let SEARCH_HOTELS = [];
-
-document.addEventListener("DOMContentLoaded", function () {
-  // Layout chung (header/footer, dark mode...)
-  if (window.Render && Render.initSharedLayout) {
-    Render.initSharedLayout("../shared", "search");
-  }
-  initSearchPage();
-});
-
-async function initSearchPage() {
-  // 1. Load component: search-bar + filter-sidebar
-  await loadSearchBar();
-  await loadFilterSidebar();
-
-  // 2. Lấy dữ liệu hotel từ backend (MySQL qua Node)
   try {
-    SEARCH_HOTELS = await Api.fetchHotels(); //  thay cho window.HOTELS fake
-    populateLocationOptions(SEARCH_HOTELS);
+    ALL_HOTELS = await Api.fetchHotels();
   } catch (err) {
-    console.error("Lỗi khi load hotels cho search:", err);
-    const metaEl = document.getElementById("search-results-meta");
-    const listEl = document.getElementById("search-results-list");
-    if (metaEl) {
-      metaEl.textContent = "Failed to load hotels from server.";
-    }
-    if (listEl) {
-      listEl.innerHTML = "";
-    }
+    document.getElementById("search-results-meta").textContent = "";
+    listEl.innerHTML = emptyState("⚠️", "Cannot load hotels", err.message, false);
     return;
   }
 
-  // 3. Set từ khóa ban đầu từ ?q=... nếu có
-  const initialQuery =
-    (window.Utils && Utils.getQueryParam
-      ? Utils.getQueryParam("q")
-      : new URLSearchParams(window.location.search).get("q")) || "";
+  fillDestinations(ALL_HOTELS);
 
-  const nameInput = document.getElementById("search-name");
-  if (nameInput) nameInput.value = initialQuery;
+  // Từ khoá truyền từ trang chủ: ?q=...
+  const q = new URLSearchParams(window.location.search).get("q") || "";
+  document.getElementById("search-query").value = q;
 
-  // 4. Render kết quả lần đầu & gắn event
-  performSearch();
-  setupEventHandlers();
+  setupEvents();
+  applyFilters();
 }
 
-function loadSearchBar() {
-  const root = document.getElementById("search-bar-root");
-  if (!root) return Promise.resolve();
-  return fetch("../shared/components/search-bar.html")
+function loadComponent(rootId, url) {
+  const root = document.getElementById(rootId);
+  return fetch(url)
     .then((r) => r.text())
     .then((html) => {
       root.innerHTML = html;
-    })
-    .catch((err) => {
-      console.error("Lỗi load search-bar.html:", err);
     });
 }
 
-function loadFilterSidebar() {
-  const root = document.getElementById("filter-sidebar-root");
-  if (!root) return Promise.resolve();
-  return fetch("../shared/components/filter-sidebar.html")
-    .then((r) => r.text())
-    .then((html) => {
-      root.innerHTML = html;
-    })
-    .catch((err) => {
-      console.error("Lỗi load filter-sidebar.html:", err);
-    });
-}
-
-function populateLocationOptions(hotels) {
-  // Lấy danh sách location duy nhất
-  const locations = Array.from(
-    new Set(
-      hotels
-        .map((h) => h.location)
-        .filter(Boolean) // bỏ null/undefined/""
-    )
-  ).sort();
-
-  const filterSelect = document.getElementById("filter-location");
-  const searchSelect = document.getElementById("search-location");
-
+function fillDestinations(hotels) {
+  const select = document.getElementById("filter-location");
+  const locations = [...new Set(hotels.map((h) => h.location).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b, "vi")
+  );
   locations.forEach((loc) => {
-    // Đổ vào filter-sidebar (chắc chắn là <select>)
-    if (filterSelect) {
-      const opt = document.createElement("option");
-      opt.value = loc;
-      opt.textContent = loc;
-      filterSelect.appendChild(opt);
-    }
-
-    // Nếu ô search-location cũng là <select> thì đổ thêm
-    if (searchSelect && searchSelect.tagName === "SELECT") {
-      const opt2 = document.createElement("option");
-      opt2.value = loc;
-      opt2.textContent = loc;
-      searchSelect.appendChild(opt2);
-    }
+    const opt = document.createElement("option");
+    opt.value = loc;
+    opt.textContent = loc;
+    select.appendChild(opt);
   });
 }
 
-
-function setupEventHandlers() {
-  const searchForm = document.getElementById("search-bar-form");
-  if (searchForm) {
-    searchForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      performSearch();
-    });
-  }
-
-
-  const applyBtn = document.getElementById("filter-apply-btn");
-  const resetBtn = document.getElementById("filter-reset-btn");
-
-  if (applyBtn) {
-    applyBtn.addEventListener("click", performSearch);
-  }
-  if (resetBtn) {
-    resetBtn.addEventListener("click", function () {
-      [
-        "filter-location",
-        "filter-min-price",
-        "filter-max-price",
-        "filter-rating",
-        "filter-sort",
-      ].forEach(function (id) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        if (el.tagName === "SELECT") el.value = "";
-        else el.value = "";
-      });
-      performSearch();
-    });
-  }
-}
-
-function performSearch() {
-  const hotels = SEARCH_HOTELS || []; // 🔥 dùng data thật từ backend
-  const listEl = document.getElementById("search-results-list");
-  const metaEl = document.getElementById("search-results-meta");
-
-  if (!listEl || !metaEl) {
-    console.warn("Thiếu #search-results-list hoặc #search-results-meta");
-    return;
-  }
-
-  // === Không có data từ backend ===
-  if (!hotels.length) {
-    metaEl.textContent =
-      "No hotel data loaded. Please check database or backend API.";
-    listEl.innerHTML = "";
-    return;
-  }
-
-  const name = (document.getElementById("search-name")?.value || "")
-    .toLowerCase();
-  const searchLocation =
-    document.getElementById("search-location")?.value || "";
-
-  const fLocation = document.getElementById("filter-location")?.value || "";
-  const minPriceStr =
-    document.getElementById("filter-min-price")?.value || "";
-  const maxPriceStr =
-    document.getElementById("filter-max-price")?.value || "";
-  const ratingStr = document.getElementById("filter-rating")?.value || "";
-  const sortBy = document.getElementById("filter-sort")?.value || "";
-
-  let results = hotels.slice();
-
-  // Lọc theo tên
-  if (name) {
-    results = results.filter((h) =>
-      (h.name || "").toLowerCase().includes(name)
-    );
-  }
-
-  // Lọc theo địa điểm: ưu tiên ô search-location, sau đó filter-location
-  const finalLocation = searchLocation || fLocation;
-  if (finalLocation) {
-    results = results.filter((h) => h.location === finalLocation);
-  }
-
-  // Lọc theo price
-  const minPrice = minPriceStr ? Number(minPriceStr) : null;
-  const maxPrice = maxPriceStr ? Number(maxPriceStr) : null;
-
-  if (minPrice !== null && !isNaN(minPrice)) {
-    results = results.filter((h) => Number(h.price) >= minPrice);
-  }
-  if (maxPrice !== null && !isNaN(maxPrice)) {
-    results = results.filter((h) => Number(h.price) <= maxPrice);
-  }
-
-  // Lọc theo rating
-  const rating = ratingStr ? Number(ratingStr) : null;
-  if (rating !== null && !isNaN(rating)) {
-    results = results.filter((h) => Number(h.rating) >= rating);
-  }
-
-  // Sort
-  if (sortBy === "price-asc") {
-    results.sort((a, b) => a.price - b.price);
-  } else if (sortBy === "price-desc") {
-    results.sort((a, b) => b.price - a.price);
-  } else if (sortBy === "rating-desc") {
-    results.sort((a, b) => b.rating - a.rating);
-  }
-
-  // Meta text
-  if (!results.length) {
-    metaEl.textContent =
-      "No hotels match your criteria. Try adjusting filters.";
-  } else {
-    metaEl.textContent =
-      results.length + " luxury stays found for your search.";
-  }
-
-  // Render grid + gắn event trên card
-  Render.renderHotelGrid(results, listEl).then(function () {
-    setupResultCardEvents(listEl);
+function setupEvents() {
+  // Ô tìm kiếm: lọc ngay khi gõ, bấm Search thì cập nhật URL
+  const form = document.getElementById("search-bar-form");
+  const queryInput = document.getElementById("search-query");
+  queryInput.addEventListener("input", applyFilters);
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    applyFilters();
   });
-}
 
-function setupResultCardEvents(container) {
-  if (!container) return;
+  // Mọi bộ lọc khác: đổi là lọc luôn, không cần nút Apply
+  document.getElementById("filter-location").addEventListener("change", applyFilters);
+  document.getElementById("filter-sort").addEventListener("change", applyFilters);
+  document
+    .querySelectorAll('#filter-sidebar input[type="radio"]')
+    .forEach((r) => r.addEventListener("change", applyFilters));
 
-  container.addEventListener("click", function (e) {
+  document.getElementById("filter-reset-btn").addEventListener("click", resetFilters);
+
+  // Click trên thẻ khách sạn
+  document.getElementById("search-results-list").addEventListener("click", (e) => {
     const target = e.target;
     if (!(target instanceof HTMLElement)) return;
 
-    const card = target.closest(".hotel-card");
-    if (!card) return;
+    if (target.id === "empty-reset-btn") {
+      resetFilters();
+      return;
+    }
 
-    const id = card.getAttribute("data-hotel-id");
+    const card = target.closest(".hotel-card");
+    const id = card && card.getAttribute("data-hotel-id");
     if (!id) return;
 
-    if (target.classList.contains("btn-view-detail")) {
-      // sang hotel detail
-      if (window.Router && typeof Router.goToHotelDetail === "function") {
-        Router.goToHotelDetail(id);
-      } else {
-        window.location.href =
-          "../hotel-detail/index.html?id=" + encodeURIComponent(id);
-      }
-    } else if (target.classList.contains("btn-book-now")) {
-      // sang booking
-      if (window.Router && typeof Router.goToBooking === "function") {
-        Router.goToBooking(id);
-      } else {
-        window.location.href =
-          "../booking/index.html?id=" + encodeURIComponent(id);
-      }
+    if (target.classList.contains("btn-book-now")) Router.goToBooking(id);
+    else Router.goToHotelDetail(id);
+  });
+
+  // Bấm "x" trên nhãn bộ lọc đang bật
+  document.getElementById("active-filters").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-clear]");
+    if (btn) clearFilter(btn.dataset.clear);
+  });
+}
+
+function getFilters() {
+  const checked = (name) => document.querySelector(`#filter-sidebar input[name="${name}"]:checked`);
+  return {
+    query: document.getElementById("search-query").value.trim(),
+    location: document.getElementById("filter-location").value,
+    price: checked("price") ? checked("price").value : "",
+    rating: checked("rating") ? checked("rating").value : "",
+    sort: document.getElementById("filter-sort").value,
+  };
+}
+
+function applyFilters() {
+  const f = getFilters();
+  let results = ALL_HOTELS.slice();
+
+  // Tìm theo tên, địa điểm, mô tả; không phân biệt hoa thường và dấu ("ha long" = "Hạ Long")
+  if (f.query) {
+    const words = Utils.normalizeText(f.query).split(/\s+/);
+    results = results.filter((h) => {
+      const text = Utils.normalizeText([h.name, h.location, h.description].join(" "));
+      return words.every((w) => text.includes(w));
+    });
+  }
+
+  if (f.location) {
+    results = results.filter((h) => h.location === f.location);
+  }
+
+  if (f.price) {
+    const [min, max] = f.price.split("-");
+    if (min) results = results.filter((h) => Number(h.price) >= Number(min));
+    if (max) results = results.filter((h) => Number(h.price) < Number(max));
+  }
+
+  if (f.rating) {
+    results = results.filter((h) => Number(h.rating) >= Number(f.rating));
+  }
+
+  if (f.sort === "price-asc") results.sort((a, b) => a.price - b.price);
+  else if (f.sort === "price-desc") results.sort((a, b) => b.price - a.price);
+  else if (f.sort === "rating-desc") results.sort((a, b) => b.rating - a.rating);
+
+  updateUrl(f.query);
+  renderActiveFilters(f);
+  renderResults(results);
+}
+
+function renderResults(results) {
+  const listEl = document.getElementById("search-results-list");
+  const metaEl = document.getElementById("search-results-meta");
+
+  if (!results.length) {
+    metaEl.textContent = "No hotels found";
+    listEl.innerHTML = emptyState(
+      "🏨",
+      "No hotels match your search",
+      "Try another destination or remove some filters.",
+      true
+    );
+    return;
+  }
+
+  metaEl.textContent = results.length + (results.length === 1 ? " hotel found" : " hotels found");
+  Render.renderHotelGrid(results, listEl);
+}
+
+const PRICE_LABEL = {
+  "0-700000": "Under 700K",
+  "700000-1000000": "700K – 1M",
+  "1000000-": "Over 1M",
+};
+
+function renderActiveFilters(f) {
+  const tags = [];
+  if (f.query) tags.push(["query", `"${f.query}"`]);
+  if (f.location) tags.push(["location", f.location]);
+  if (f.price) tags.push(["price", PRICE_LABEL[f.price]]);
+  if (f.rating) tags.push(["rating", f.rating + "★ +"]);
+
+  const escape = (t) => {
+    const d = document.createElement("div");
+    d.textContent = t;
+    return d.innerHTML;
+  };
+
+  document.getElementById("active-filters").innerHTML = tags
+    .map(
+      ([key, label]) =>
+        `<span class="filter-tag">${escape(label)}<button type="button" data-clear="${key}" aria-label="Remove filter">×</button></span>`
+    )
+    .join("");
+}
+
+function clearFilter(key) {
+  if (key === "query") document.getElementById("search-query").value = "";
+  if (key === "location") document.getElementById("filter-location").value = "";
+  if (key === "price" || key === "rating") {
+    const any = document.querySelector(`#filter-sidebar input[name="${key}"][value=""]`);
+    if (any) any.checked = true;
+  }
+  applyFilters();
+}
+
+function resetFilters() {
+  ["query", "location", "price", "rating"].forEach((k) => {
+    if (k === "query") document.getElementById("search-query").value = "";
+    if (k === "location") document.getElementById("filter-location").value = "";
+    if (k === "price" || k === "rating") {
+      const any = document.querySelector(`#filter-sidebar input[name="${k}"][value=""]`);
+      if (any) any.checked = true;
     }
   });
+  document.getElementById("filter-sort").value = "";
+  applyFilters();
+}
+
+// Giữ từ khoá trên URL để tải lại trang / gửi link vẫn giữ kết quả
+function updateUrl(query) {
+  const url = new URL(window.location.href);
+  if (query) url.searchParams.set("q", query);
+  else url.searchParams.delete("q");
+  window.history.replaceState(null, "", url);
+}
+
+function emptyState(icon, title, text, withReset) {
+  return `
+    <div class="empty-state">
+      <div class="empty-state-icon">${icon}</div>
+      <h3>${title}</h3>
+      <p>${text}</p>
+      ${withReset ? '<button class="btn btn-outline" id="empty-reset-btn" type="button">Clear all filters</button>' : ""}
+    </div>`;
 }

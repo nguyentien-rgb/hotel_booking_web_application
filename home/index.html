@@ -19,35 +19,28 @@
             <p class="home-hero-subtitle">
               Curated 5★ hotels across Vietnam with golden service and black-tie style.
             </p>
-            <form id="home-search-form" class="home-search-form" autocomplete="off">
-              <div class="form-row">
-                <div class="form-field">
-                  <label for="home-search-input">Where would you like to stay?</label>
-                  <input
-                    type="text"
-                    id="home-search-input"
-                    placeholder="Search by hotel name or destination"
-                  />
-                </div>
-                <div class="form-field">
-                  <label>&nbsp;</label>
-                  <button class="btn btn-gold btn-full" type="submit">Search hotels</button>
-                </div>
-              </div>
+            <label for="home-search-input" class="home-search-label">Where would you like to stay?</label>
+            <form id="home-search-form" class="home-search-form" autocomplete="off" role="search">
+              <input
+                type="search"
+                id="home-search-input"
+                placeholder="Hotel name or destination, e.g. Sa Pa"
+              />
+              <button class="btn btn-gold" type="submit">Search</button>
             </form>
-            <p class="home-hero-meta text-muted">
-              Handpicked stays in Hà Nội, Đà Nẵng, Nha Trang, Phú Quốc and more.
+            <p class="home-hero-meta text-muted" id="home-hero-meta">
+              Handpicked stays across northern Vietnam.
             </p>
           </div>
           <div class="home-hero-image">
             <div class="home-hero-photo"></div>
             <div class="home-hero-stats card">
               <div>
-                <div class="stat-number">250+</div>
-                <div class="stat-label">Luxury rooms</div>
+                <div class="stat-number" id="stat-hotels">–</div>
+                <div class="stat-label">Hotels</div>
               </div>
               <div>
-                <div class="stat-number">4.8★</div>
+                <div class="stat-number" id="stat-rating">–</div>
                 <div class="stat-label">Average rating</div>
               </div>
             </div>
@@ -58,7 +51,7 @@
           <div class="home-section-header">
             <h2 class="home-section-title">Featured stays</h2>
             <p class="home-section-subtitle text-muted">
-              Explore some of our most loved hotels this week.
+              Our top-rated stays, from mountain homestays to bay-view hotels.
             </p>
           </div>
           <div id="home-hotel-list" class="grid grid-3"></div>
@@ -69,7 +62,6 @@
     <div id="app-footer"></div>
 
     <script src="../shared/js/utils.js"></script>
-    <script src="../shared/js/data.js"></script>
     <script src="../shared/js/router.js"></script>
     <script src="../shared/js/render.js"></script>
     <script src="../shared/js/api.js"></script>

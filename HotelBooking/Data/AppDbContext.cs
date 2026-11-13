@@ -10,6 +10,7 @@ public class AppDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Hotel> Hotels => Set<Hotel>();
     public DbSet<Booking> Bookings => Set<Booking>();
+    public DbSet<OwnerProfile> OwnerProfiles => Set<OwnerProfile>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,10 +21,24 @@ public class AppDbContext : DbContext
             e.Property(x => x.Name).HasColumnName("name").HasMaxLength(100);
             e.Property(x => x.Email).HasColumnName("email").HasMaxLength(255);
             e.Property(x => x.PasswordHash).HasColumnName("password_hash").HasMaxLength(255);
+            e.Property(x => x.Phone).HasColumnName("phone").HasMaxLength(20);
             e.Property(x => x.Role).HasColumnName("role").HasMaxLength(20);
             e.Property(x => x.IsActive).HasColumnName("is_active");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("SYSDATETIME()");
             e.HasIndex(x => x.Email).IsUnique();
+        });
+
+        modelBuilder.Entity<OwnerProfile>(e =>
+        {
+            e.ToTable("owner_profiles");
+            e.HasKey(x => x.UserId);
+            e.Property(x => x.UserId).HasColumnName("user_id");
+            e.Property(x => x.BusinessName).HasColumnName("business_name").HasMaxLength(200);
+            e.Property(x => x.TaxCode).HasColumnName("tax_code").HasMaxLength(20);
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("SYSDATETIME()");
+            e.HasOne(x => x.User).WithOne(u => u.OwnerProfile)
+                .HasForeignKey<OwnerProfile>(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Hotel>(e =>
