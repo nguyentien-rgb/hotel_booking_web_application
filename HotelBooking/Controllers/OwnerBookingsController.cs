@@ -46,26 +46,31 @@ public class OwnerBookingsController : ApiControllerBase
     public Task<IActionResult> Reject(int id) =>
         ChangeStatus(id, from: BookingStatus.Pending, to: BookingStatus.Cancelled);
 
+    // confirmed → cancelled (khách không đến, hoặc khách sạn không phục vụ được);
+    // không huỷ thì booking no-show vẫn bị tính vào doanh thu
+    [HttpPut("{id:int}/cancel")]
+    public Task<IActionResult> Cancel(int id) =>
+        ChangeStatus(id, from: BookingStatus.Confirmed, to: BookingStatus.Cancelled);
+
     // confirmed → completed, chỉ khi khách đã tới ngày trả phòng
     [HttpPut("{id:int}/complete")]
-    public async Task<IActionResult> Complete(int id)
-    {
-        var booking = await FindMine(id);
-        if (booking == null) return Error(404, "Booking not found.");
+    public Task<IActionResult> Complete(int id) =>
+        ChangeStatus(id, from: BookingStatus.Confirmed, to: BookingStatus.Completed,
+            check: b => b.CheckOut > Today
+                ? "Booking can only be completed on or after the check-out date."
+                : null);
 
-        if (booking.CheckOut > DateOnly.FromDateTime(DateTime.Today))
-            return Error(400, "Booking can only be completed on or after the check-out date.");
-
-        return await ChangeStatus(id, from: BookingStatus.Confirmed, to: BookingStatus.Completed);
-    }
-
-    private async Task<IActionResult> ChangeStatus(int id, string from, string to)
+    // check: điều kiện thêm, trả về thông báo lỗi hoặc null nếu hợp lệ
+    private async Task<IActionResult> ChangeStatus(int id, string from, string to, Func<Booking, string?>? check = null)
     {
         var booking = await FindMine(id);
         if (booking == null) return Error(404, "Booking not found.");
 
         if (booking.Status != from)
             return Error(400, $"Only {from} bookings can be changed to {to}.");
+
+        if (check?.Invoke(booking) is { } message)
+            return Error(400, message);
 
         booking.Status = to;
         await _db.SaveChangesAsync();

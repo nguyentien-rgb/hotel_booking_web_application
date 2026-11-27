@@ -16,11 +16,8 @@ let DRAFT = null;
 let qrTimer = null;
 let qrRef = "";
 
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.textContent = text == null ? "" : String(text);
-  return div.innerHTML;
-}
+// Escape dùng chung (escape cả dấu nháy để an toàn trong thuộc tính HTML)
+const escapeHtml = Utils.escapeHtml;
 
 function formatDate(iso) {
   const [y, m, d] = String(iso).split("-");
@@ -29,16 +26,9 @@ function formatDate(iso) {
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-function loadDraft() {
-  try {
-    return JSON.parse(localStorage.getItem("booking_draft") || "null");
-  } catch {
-    return null;
-  }
-}
 
 function initPaymentPage(user) {
-  DRAFT = loadDraft();
+  DRAFT = Utils.loadBookingDraft();
 
   if (!DRAFT || !DRAFT.hotelId) {
     document.getElementById("payment-layout").innerHTML = `
@@ -70,8 +60,8 @@ function renderSummary() {
       <span class="pay-summary-location">${escapeHtml(d.location || "")}</span>
 
       <dl class="pay-summary-list">
-        <dt>Check-in</dt><dd>${formatDate(d.checkIn)}</dd>
-        <dt>Check-out</dt><dd>${formatDate(d.checkOut)}</dd>
+        <dt>Check-in</dt><dd>${escapeHtml(formatDate(d.checkIn))}</dd>
+        <dt>Check-out</dt><dd>${escapeHtml(formatDate(d.checkOut))}</dd>
         <dt>Guests</dt><dd>${d.guests}</dd>
         <dt>Nights</dt><dd>${d.nights}</dd>
         ${d.price ? `<dt>Price</dt><dd>${Utils.formatPrice(Number(d.price))} / guest / night</dd>` : ""}
@@ -277,7 +267,7 @@ async function startPayment() {
     await wait(500);
     setStep(steps, 4);
 
-    localStorage.removeItem("booking_draft");
+    Utils.clearBookingDraft();
     stopQr();
     showSuccess(result, method);
   } catch (err) {

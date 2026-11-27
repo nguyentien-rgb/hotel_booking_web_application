@@ -11,6 +11,9 @@ namespace HotelBooking.Controllers;
 [Authorize(Roles = Roles.Customer)]
 public class BookingsController : ApiControllerBase
 {
+    // Phải khớp MAX_NIGHTS trong booking/script.js
+    private const int MaxNights = 30;
+
     private readonly AppDbContext _db;
     public BookingsController(AppDbContext db) => _db = db;
 
@@ -19,25 +22,37 @@ public class BookingsController : ApiControllerBase
     {
         var checkIn = req.CheckIn!.Value;
         var checkOut = req.CheckOut!.Value;
-        var today = DateOnly.FromDateTime(DateTime.Today);
-
-        if (checkIn < today)
+        if (checkIn < Today)
             return Error(400, "Check-in date cannot be in the past.");
         if (checkOut <= checkIn)
             return Error(400, "Check-out date must be after check-in date.");
 
+        var nights = checkOut.DayNumber - checkIn.DayNumber;
+        // Chặn ngày trả phòng quá xa: tổng tiền vượt cột decimal(14,0) hoặc booking vô lý
+        if (nights > MaxNights)
+            return Error(400, $"Maximum stay is {MaxNights} nights.");
+
+        // Khách sạn của owner bị khoá thì coi như không tồn tại
         var hotel = await _db.Hotels
-            .FirstOrDefaultAsync(h => h.Id == req.HotelId && h.Status == HotelStatus.Approved);
+            .FirstOrDefaultAsync(h => h.Id == req.HotelId && h.Status == HotelStatus.Approved && h.Owner!.IsActive);
         if (hotel == null)
             return Error(404, "Hotel not found.");
 
+        var userId = CurrentUserId;
+        // Hai khoảng [in, out) giao nhau khi in1 < out2 và out1 > in2
+        var overlap = await _db.Bookings.AnyAsync(b =>
+            b.UserId == userId && b.HotelId == hotel.Id &&
+            b.Status != BookingStatus.Cancelled &&
+            b.CheckIn < checkOut && b.CheckOut > checkIn);
+        if (overlap)
+            return Error(409, "You already have a booking at this hotel for these dates.");
+
         // Server tự tính tiền, không tin số frontend gửi lên
-        var nights = checkOut.DayNumber - checkIn.DayNumber;
         var total = hotel.Price * nights * req.Guests;
 
         var booking = new Booking
         {
-            UserId = CurrentUserId,
+            UserId = userId,
             HotelId = hotel.Id,
             CheckIn = checkIn,
             CheckOut = checkOut,
@@ -82,7 +97,7 @@ public class BookingsController : ApiControllerBase
         if (booking.Status != BookingStatus.Pending && booking.Status != BookingStatus.Confirmed)
             return Error(400, "This booking cannot be cancelled.");
 
-        if (booking.CheckIn <= DateOnly.FromDateTime(DateTime.Today))
+        if (booking.CheckIn <= Today)
             return Error(400, "Cannot cancel on or after the check-in date.");
 
         booking.Status = BookingStatus.Cancelled;

@@ -4,6 +4,7 @@ using HotelBooking.Models;
 using HotelBooking.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelBooking.Controllers;
@@ -21,6 +22,7 @@ public class AuthController : ApiControllerBase
     }
 
     [HttpPost("register")]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> Register(RegisterRequest req)
     {
         var email = req.Email.Trim().ToLower();
@@ -49,12 +51,21 @@ public class AuthController : ApiControllerBase
         }
 
         _db.Users.Add(user);
-        await _db.SaveChangesAsync();
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            // Hai request cùng email lọt qua AnyAsync cùng lúc; unique index chặn request thứ hai
+            return Error(409, "Email already registered. Please login.");
+        }
 
         return StatusCode(201, ToResponse(user));
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> Login(LoginRequest req)
     {
         var email = req.Email.Trim().ToLower();

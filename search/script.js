@@ -112,40 +112,50 @@ function getFilters() {
   };
 }
 
-function applyFilters() {
-  const f = getFilters();
-  let results = ALL_HOTELS.slice();
-
+// Một khách sạn có khớp bộ lọc f không. Dùng chung cho danh sách kết quả và số đếm ở sidebar.
+function matches(h, f) {
   // Tìm theo tên, địa điểm, mô tả; không phân biệt hoa thường và dấu ("ha long" = "Hạ Long")
   if (f.query) {
     const words = Utils.normalizeText(f.query).split(/\s+/);
-    results = results.filter((h) => {
-      const text = Utils.normalizeText([h.name, h.location, h.description].join(" "));
-      return words.every((w) => text.includes(w));
-    });
+    const text = Utils.normalizeText([h.name, h.location, h.description].join(" "));
+    if (!words.every((w) => text.includes(w))) return false;
   }
 
-  if (f.location) {
-    results = results.filter((h) => h.location === f.location);
-  }
+  if (f.location && h.location !== f.location) return false;
 
   if (f.price) {
     const [min, max] = f.price.split("-");
-    if (min) results = results.filter((h) => Number(h.price) >= Number(min));
-    if (max) results = results.filter((h) => Number(h.price) < Number(max));
+    if (min && Number(h.price) < Number(min)) return false;
+    if (max && Number(h.price) >= Number(max)) return false;
   }
 
-  if (f.rating) {
-    results = results.filter((h) => Number(h.rating) >= Number(f.rating));
-  }
+  if (f.rating && Number(h.rating) < Number(f.rating)) return false;
+
+  return true;
+}
+
+function applyFilters() {
+  const f = getFilters();
+  const results = ALL_HOTELS.filter((h) => matches(h, f));
 
   if (f.sort === "price-asc") results.sort((a, b) => a.price - b.price);
   else if (f.sort === "price-desc") results.sort((a, b) => b.price - a.price);
   else if (f.sort === "rating-desc") results.sort((a, b) => b.rating - a.rating);
 
   updateUrl(f.query);
+  updateCounts(f);
   renderActiveFilters(f);
   renderResults(results);
+}
+
+// Số khách sạn sẽ có nếu chọn lựa chọn đó, giữ nguyên các bộ lọc khác (giống Booking/Agoda)
+function updateCounts(f) {
+  document.querySelectorAll('#filter-sidebar input[type="radio"]').forEach((input) => {
+    const count = ALL_HOTELS.filter((h) => matches(h, { ...f, [input.name]: input.value })).length;
+    const option = input.closest(".option");
+    option.querySelector(".option-count").textContent = count;
+    option.classList.toggle("is-empty", count === 0);
+  });
 }
 
 function renderResults(results) {
@@ -180,11 +190,7 @@ function renderActiveFilters(f) {
   if (f.price) tags.push(["price", PRICE_LABEL[f.price]]);
   if (f.rating) tags.push(["rating", f.rating + "★ +"]);
 
-  const escape = (t) => {
-    const d = document.createElement("div");
-    d.textContent = t;
-    return d.innerHTML;
-  };
+  const escape = Utils.escapeHtml;
 
   document.getElementById("active-filters").innerHTML = tags
     .map(
@@ -229,8 +235,8 @@ function emptyState(icon, title, text, withReset) {
   return `
     <div class="empty-state">
       <div class="empty-state-icon">${icon}</div>
-      <h3>${title}</h3>
-      <p>${text}</p>
+      <h3>${Utils.escapeHtml(title)}</h3>
+      <p>${Utils.escapeHtml(text)}</p>
       ${withReset ? '<button class="btn btn-outline" id="empty-reset-btn" type="button">Clear all filters</button>' : ""}
     </div>`;
 }
