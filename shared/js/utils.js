@@ -132,6 +132,13 @@
     return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
   }
 
+  /* Escape dữ liệu trước khi chèn vào HTML, an toàn cả trong nội dung lẫn thuộc tính ("...").
+     Mọi trang dùng hàm này; đừng viết lại bằng textContent/innerHTML vì cách đó không escape dấu nháy. */
+  const HTML_ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+  function escapeHtml(text) {
+    return text == null ? "" : String(text).replace(/[&<>"']/g, (c) => HTML_ESCAPES[c]);
+  }
+
   /* Thông báo nhỏ góc màn hình, thay cho alert() */
   function toast(message, type) {
     let box = document.getElementById("toast-container");
@@ -149,6 +156,7 @@
   }
 
   window.Utils = {
+    escapeHtml,
     normalizeText,
     todayIso,
     toast,

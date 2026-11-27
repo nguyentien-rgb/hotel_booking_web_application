@@ -9,7 +9,7 @@ Content-Type: application/json
   "password": "owner123"
 }
 
-### Dán token vừa copy vào dòng dưới (không có dấu ngoặc kép)
+
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJIb3RlbEJvb2tpbmdDbGllbnQiLCJpc3MiOiJIb3RlbEJvb2tpbmciLCJleHAiOjE3OTQ1NjA5MTMsInN1YiI6IjIiLCJuYW1lIjoiQ2jhu6cga2jDoWNoIHPhuqFuIEEiLCJlbWFpbCI6Im93bmVyMUBob3RlbC5jb20iLCJyb2xlIjoib3duZXIiLCJpYXQiOjE3OTQ1NTM3MTMsIm5iZiI6MTc5NDU1MzcxM30.NRhllm6VBiwumhGcwhLpBx3IyddCfIyY-KfPV9ONIbg
 
 ### 2. Xem khách sạn của mình

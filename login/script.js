@@ -37,6 +37,10 @@ function initLoginPage() {
       return;
     }
 
+    // Khoá nút trong lúc chờ để bấm đúp không gửi 2 request; thành công thì trang tự chuyển đi
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
+
     try {
       // POST /api/auth/login → { token, user: { id, name, email, role } }
       const data = await Api.loginUser({ email, password });
@@ -48,6 +52,7 @@ function initLoginPage() {
     } catch (err) {
       console.error("Login error:", err);
       errorEl.textContent = err.message || "Login failed.";
+      if (submitBtn) submitBtn.disabled = false;
     }
   });
 }

@@ -96,7 +96,17 @@ BEGIN
 END
 
 IF COL_LENGTH(N'dbo.users', N'phone') IS NULL
-    ALTER TABLE dbo.users ADD phone NVARCHAR(20) NULL;");
+    ALTER TABLE dbo.users ADD phone NVARCHAR(20) NULL;
+
+-- Mỗi owner 1 khách sạn: đổi index thường của EF thành unique.
+-- Bỏ qua nếu dữ liệu cũ đã có owner 2 khách sạn, để API vẫn khởi động được (controller vẫn chặn khi tạo mới).
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_hotels_owner_id' AND object_id = OBJECT_ID(N'dbo.hotels') AND is_unique = 1)
+   AND NOT EXISTS (SELECT owner_id FROM dbo.hotels GROUP BY owner_id HAVING COUNT(*) > 1)
+BEGIN
+    IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_hotels_owner_id' AND object_id = OBJECT_ID(N'dbo.hotels'))
+        DROP INDEX IX_hotels_owner_id ON dbo.hotels;
+    CREATE UNIQUE INDEX IX_hotels_owner_id ON dbo.hotels(owner_id);
+END");
 
         // Tách thành lệnh riêng: SQL Server kiểm tra tên cột lúc biên dịch cả khối lệnh
         db.Database.ExecuteSqlRaw(@"
@@ -167,7 +177,8 @@ END");
             if (hotel == null)
             {
                 var owner = db.Users.FirstOrDefault(u => u.Email == s.OwnerEmail);
-                if (owner == null) continue;
+                // Owner đã có khách sạn (có thể đã đổi tên) thì không thêm bản mẫu nữa
+                if (owner == null || db.Hotels.Any(h => h.OwnerId == owner.Id)) continue;
 
                 db.Hotels.Add(new Hotel
                 {
@@ -195,7 +206,8 @@ END");
                 var rightOwner = db.Users.FirstOrDefault(u => u.Email == s.OwnerEmail);
                 var currentOwnerEmail = db.Users.Where(u => u.Id == hotel.OwnerId).Select(u => u.Email).FirstOrDefault();
                 if (rightOwner != null && hotel.OwnerId != rightOwner.Id &&
-                    Owners.Any(o => o.Email == currentOwnerEmail))
+                    Owners.Any(o => o.Email == currentOwnerEmail) &&
+                    !db.Hotels.Any(h => h.OwnerId == rightOwner.Id)) // không vi phạm 1 owner 1 khách sạn
                 {
                     hotel.OwnerId = rightOwner.Id;
                 }

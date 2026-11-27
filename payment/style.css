@@ -42,8 +42,8 @@
 
 .pay-method input:checked + .pay-method-box {
   border-color: var(--color-accent);
-  background: rgba(198, 166, 103, 0.1);
-  box-shadow: 0 0 0 3px rgba(198, 166, 103, 0.2);
+  background: var(--color-accent-soft);
+  box-shadow: 0 0 0 3px var(--color-focus);
 }
 
 .pay-method input:focus-visible + .pay-method-box {
@@ -97,11 +97,9 @@
   margin: 0 auto 1.3rem;
   padding: 1.2rem 1.3rem;
   border-radius: 18px;
-  color: #f9fafb;
-  background:
-    radial-gradient(circle at 85% 15%, rgba(251, 191, 36, 0.45), transparent 45%),
-    linear-gradient(135deg, #1f2937, #0b0f19 60%, #3b2f17);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+  color: #f4f4f2;
+  background: #2b2f36; /* thẻ xem trước luôn tối, cả ở chế độ sáng */
+  box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -118,7 +116,7 @@
   width: 42px;
   height: 30px;
   border-radius: 6px;
-  background: linear-gradient(135deg, #fde68a, #c6a667);
+  background: #c9b28a;
 }
 
 .card-brand {
@@ -301,8 +299,7 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: rgba(3, 7, 18, 0.65);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .pay-modal-box {
@@ -356,7 +353,7 @@
   animation: pop 0.35s ease-out;
 }
 
-.result-icon.success { background: #16a34a; }
+.result-icon.success { background: var(--color-success); }
 .result-icon.error { background: var(--color-danger); }
 
 @keyframes pop {
@@ -410,7 +407,7 @@
 .pay-steps li.done::before {
   content: "✓";
   border: none;
-  background: #16a34a;
+  background: var(--color-success);
   color: #fff;
   font-size: 0.7rem;
   display: flex;

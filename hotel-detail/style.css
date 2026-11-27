@@ -8,9 +8,8 @@
 
 /* ===== Ảnh ===== */
 .hotel-gallery-main {
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
   background: var(--color-border);
 }
 
@@ -37,13 +36,11 @@
   border: 2px solid transparent;
   transition:
     opacity var(--transition-fast),
-    transform var(--transition-fast),
     border-color var(--transition-fast);
 }
 
 .hotel-gallery-thumbs img:hover {
   opacity: 1;
-  transform: translateY(-2px);
 }
 
 .hotel-gallery-thumbs img.active {
@@ -83,8 +80,8 @@
 }
 
 .rating-pill {
-  background: #111827;
-  color: #fef3c7;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-dark);
   font-weight: 700;
   padding: 0.3rem 0.75rem;
   border-radius: 999px;
@@ -93,9 +90,8 @@
 .hotel-booking-box {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
   padding: 1.3rem;
-  box-shadow: var(--shadow-card);
 }
 
 .hotel-detail-price {

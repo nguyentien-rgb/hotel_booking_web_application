@@ -45,7 +45,15 @@ public class OwnerHotelsController : ApiControllerBase
         Apply(hotel, req);
 
         _db.Hotels.Add(hotel);
-        await _db.SaveChangesAsync();
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            // Hai request tạo cùng lúc: unique index trên owner_id chặn cái thứ hai
+            return Error(400, "Each owner can only register one hotel.");
+        }
 
         return StatusCode(201, HotelDto.From(hotel));
     }
@@ -90,10 +98,13 @@ public class OwnerHotelsController : ApiControllerBase
     private static void Apply(Hotel hotel, SaveHotelRequest req)
     {
         hotel.Name = req.Name.Trim();
-        hotel.Location = req.Location?.Trim();
+        hotel.Location = NullIfBlank(req.Location);
         hotel.Price = req.Price;
-        hotel.Description = req.Description?.Trim();
-        hotel.Image1 = req.Image1?.Trim();
-        hotel.Image2 = req.Image2?.Trim();
+        hotel.Description = NullIfBlank(req.Description);
+        hotel.Image1 = NullIfBlank(req.Image1);
+        hotel.Image2 = NullIfBlank(req.Image2);
     }
+
+    // Ô bỏ trống lưu NULL (giống dữ liệu mẫu), không lưu chuỗi rỗng
+    private static string? NullIfBlank(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 }

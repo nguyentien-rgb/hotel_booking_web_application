@@ -1,32 +1,61 @@
-<aside class="card filter-panel" id="filter-sidebar">
+<aside class="filter-panel" id="filter-sidebar" aria-label="Filters">
   <div class="filter-panel-head">
-    <h3>Filters</h3>
-    <button id="filter-reset-btn" class="filter-reset" type="button">Reset</button>
+    <h2>Filter by</h2>
+    <button id="filter-reset-btn" class="filter-reset" type="button">Clear all</button>
   </div>
 
-  <div class="filter-group">
-    <label for="filter-location" class="filter-label">Destination</label>
+  <section class="filter-group">
+    <h3 class="filter-title"><label for="filter-location">Destination</label></h3>
     <select id="filter-location">
       <option value="">All destinations</option>
     </select>
-  </div>
+  </section>
 
-  <div class="filter-group">
-    <span class="filter-label">Price per guest / night</span>
-    <div class="chip-group" id="filter-price">
-      <label class="chip"><input type="radio" name="price" value="" checked /><span>Any</span></label>
-      <label class="chip"><input type="radio" name="price" value="0-700000" /><span>Under 700K</span></label>
-      <label class="chip"><input type="radio" name="price" value="700000-1000000" /><span>700K – 1M</span></label>
-      <label class="chip"><input type="radio" name="price" value="1000000-" /><span>Over 1M</span></label>
+  <!-- Số bên phải mỗi lựa chọn do search/script.js (updateCounts) điền -->
+  <section class="filter-group">
+    <h3 class="filter-title">Your budget <span class="filter-sub">per guest / night</span></h3>
+    <div class="option-list" id="filter-price">
+      <label class="option">
+        <input type="radio" name="price" value="" checked />
+        <span class="option-text">Any price</span>
+        <span class="option-count"></span>
+      </label>
+      <label class="option">
+        <input type="radio" name="price" value="0-700000" />
+        <span class="option-text">Under 700.000 ₫</span>
+        <span class="option-count"></span>
+      </label>
+      <label class="option">
+        <input type="radio" name="price" value="700000-1000000" />
+        <span class="option-text">700.000 – 1.000.000 ₫</span>
+        <span class="option-count"></span>
+      </label>
+      <label class="option">
+        <input type="radio" name="price" value="1000000-" />
+        <span class="option-text">Over 1.000.000 ₫</span>
+        <span class="option-count"></span>
+      </label>
     </div>
-  </div>
+  </section>
 
-  <div class="filter-group">
-    <span class="filter-label">Guest rating</span>
-    <div class="chip-group" id="filter-rating">
-      <label class="chip"><input type="radio" name="rating" value="" checked /><span>Any</span></label>
-      <label class="chip"><input type="radio" name="rating" value="4.5" /><span>4.5★ +</span></label>
-      <label class="chip"><input type="radio" name="rating" value="4" /><span>4★ +</span></label>
+  <section class="filter-group">
+    <h3 class="filter-title">Guest rating</h3>
+    <div class="option-list" id="filter-rating">
+      <label class="option">
+        <input type="radio" name="rating" value="" checked />
+        <span class="option-text">Any rating</span>
+        <span class="option-count"></span>
+      </label>
+      <label class="option">
+        <input type="radio" name="rating" value="4.5" />
+        <span class="option-text">Excellent: 4.5+</span>
+        <span class="option-count"></span>
+      </label>
+      <label class="option">
+        <input type="radio" name="rating" value="4" />
+        <span class="option-text">Very good: 4.0+</span>
+        <span class="option-count"></span>
+      </label>
     </div>
-  </div>
+  </section>
 </aside>

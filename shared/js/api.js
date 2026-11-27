@@ -115,6 +115,7 @@
     bookings: (status) => request("/owner/bookings" + qs({ status }), { auth: true }),
     confirmBooking: (id) => request("/owner/bookings/" + id + "/confirm", { method: "PUT", auth: true }),
     rejectBooking: (id) => request("/owner/bookings/" + id + "/reject", { method: "PUT", auth: true }),
+    cancelBooking: (id) => request("/owner/bookings/" + id + "/cancel", { method: "PUT", auth: true }),
     completeBooking: (id) =>
       request("/owner/bookings/" + id + "/complete", { method: "PUT", auth: true }),
   };

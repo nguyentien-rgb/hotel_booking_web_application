@@ -59,7 +59,7 @@
 .admin-tab.active {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: #111;
+  color: var(--color-on-accent);
 }
 
 .section-head {

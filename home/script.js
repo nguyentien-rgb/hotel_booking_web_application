@@ -37,7 +37,7 @@ async function loadFeaturedHotels() {
     await Render.renderHotelGrid(hotels.slice(0, 6), listEl);
   } catch (err) {
     console.error("Error loading hotels:", err);
-    listEl.innerHTML = `<p class="form-error">${err.message}</p>`;
+    listEl.innerHTML = `<p class="form-error">${Utils.escapeHtml(err.message)}</p>`;
   }
 
   // Bấm "Book now" → đặt phòng (chưa đăng nhập sẽ bị đưa sang login)

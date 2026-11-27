@@ -29,11 +29,8 @@ const TAB_FILTER = {
   cancelled: (b) => b.status === "cancelled",
 };
 
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.textContent = text == null ? "" : String(text);
-  return div.innerHTML;
-}
+// Escape dùng chung (escape cả dấu nháy để an toàn trong thuộc tính HTML)
+const escapeHtml = Utils.escapeHtml;
 
 // "2026-11-20" → "20/11/2026"
 function formatDate(iso) {

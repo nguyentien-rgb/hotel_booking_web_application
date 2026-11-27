@@ -56,6 +56,8 @@ public class AppDbContext : DbContext
             e.Property(x => x.Status).HasColumnName("status").HasMaxLength(20);
             e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("SYSDATETIME()");
             e.HasOne(x => x.Owner).WithMany(u => u.Hotels).HasForeignKey(x => x.OwnerId).OnDelete(DeleteBehavior.Restrict);
+            // Luật nghiệp vụ: mỗi owner đúng 1 khách sạn (DB cũ được nâng cấp trong DbSeeder.EnsureSchema)
+            e.HasIndex(x => x.OwnerId).IsUnique();
         });
 
         modelBuilder.Entity<Booking>(e =>

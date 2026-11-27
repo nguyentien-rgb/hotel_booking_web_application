@@ -33,11 +33,8 @@ const STATUS_LABEL = {
   locked: "Locked",
 };
 
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.textContent = text == null ? "" : String(text);
-  return div.innerHTML;
-}
+// Escape dùng chung (escape cả dấu nháy để an toàn trong thuộc tính HTML)
+const escapeHtml = Utils.escapeHtml;
 
 function badge(status) {
   return `<span class="status-badge status-${status}">${STATUS_LABEL[status] || status}</span>`;

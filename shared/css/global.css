@@ -1,25 +1,38 @@
 :root {
-  --color-bg: #f5f5f7;
+  /* Bảng màu: nền trung tính dịu + đúng một màu nhấn (nâu đồng trầm). Không gradient. */
+  --color-bg: #f4f4f2;
   --color-surface: #ffffff;
-  --color-surface-soft: #faf5e6;
-  --color-text: #111827;
-  --color-text-muted: #6b7280;
-  --color-accent: #c6a667; /* vàng luxury */
-  --color-accent-dark: #9b7f3f;
-  --color-border: #e5e7eb;
-  --color-danger: #dc2626;
-  --color-link: #9b7f3f;
+  --color-surface-soft: #f8f7f4;
+  --color-text: #1f2328;
+  --color-text-muted: #5f6670;
+  --color-accent: #8a6d46;
+  --color-accent-dark: #6e5636;
+  --color-accent-soft: #f2ede4;
+  --color-on-accent: #ffffff; /* chữ đặt trên nền màu nhấn */
+  --color-border: #e3e2de;
+  --color-danger: #b42318;
+  --color-success: #2e7d4f;
+  --color-link: #6e5636;
   --color-input-bg: #ffffff;
-  --color-hover: rgba(17, 24, 39, 0.05);
-  --body-bg: radial-gradient(circle at top, #fdf5dd 0, #f5f5f7 45%, #eceef2 100%);
-  --card-soft-bg: linear-gradient(145deg, #fffbf2, #f1e9da);
+  --color-hover: rgba(31, 35, 40, 0.05);
+  --color-focus: rgba(138, 109, 70, 0.25);
 
-  --radius-lg: 18px;
-  --radius-md: 12px;
+  /* Badge trạng thái */
+  --status-pending-bg: #f5eddc;
+  --status-pending-fg: #7a5a1c;
+  --status-ok-bg: #e4f0e8;
+  --status-ok-fg: #2e6b45;
+  --status-bad-bg: #f7e4e1;
+  --status-bad-fg: #9a3226;
+  --status-done-bg: #e8eaef;
+  --status-done-fg: #44506a;
+
+  --radius-lg: 12px;
+  --radius-md: 10px;
   --radius-sm: 8px;
 
-  --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.08);
-  --shadow-card: 0 14px 35px rgba(15, 23, 42, 0.06);
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05);
 
   --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
@@ -43,8 +56,7 @@ body {
 body {
   min-height: 100vh;
   font-family: var(--font-family);
-  background: var(--body-bg);
-  background-attachment: fixed;
+  background: var(--color-bg);
   color: var(--color-text);
   transition: background-color var(--transition-normal), color var(--transition-normal);
   display: flex;
@@ -84,7 +96,7 @@ body {
 
 .btn {
   border: none;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   padding: 0.55rem 1.3rem;
   font-size: 0.92rem;
   font-weight: 500;
@@ -102,25 +114,27 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #111827, #000000);
-  color: #f9fafb;
-  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.4);
+  background: var(--color-text);
+  color: var(--color-surface);
 }
 
 .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+  opacity: 0.88;
 }
 
+/* Nút chính. Tên class giữ "gold" để không phải sửa HTML */
 .btn-gold {
-  background: linear-gradient(135deg, #fbbf24, #c6a667);
-  color: #111827;
-  box-shadow: 0 10px 25px rgba(198, 166, 103, 0.5);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 .btn-gold:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 16px 35px rgba(198, 166, 103, 0.7);
+  background: var(--color-accent-dark);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .btn-outline {
@@ -155,15 +169,18 @@ body {
 .btn-icon {
   width: 36px;
   height: 36px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: radial-gradient(circle at 30% 20%, #fbbf24, #c6a667, #111827);
-  color: #f9fafb;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.6);
+}
+
+.btn-icon:hover {
+  background: var(--color-hover);
 }
 
 /* Inputs */
@@ -173,7 +190,7 @@ select,
 textarea {
   font-family: var(--font-family);
   font-size: 0.9rem;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   padding: 0.45rem 0.9rem;
   outline: none;
@@ -196,7 +213,7 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(198, 166, 103, 0.25);
+  box-shadow: 0 0 0 3px var(--color-focus);
 }
 
 input:disabled {
@@ -255,15 +272,9 @@ a {
   position: sticky;
   top: 0;
   z-index: 50;
-  backdrop-filter: blur(22px);
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0.92),
-    rgba(24, 24, 27, 0.95),
-    rgba(0, 0, 0, 0.92)
-  );
-  color: #f9fafb;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .header-inner {
@@ -284,17 +295,14 @@ a {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 20%, #fbbf24, #c6a667, #000000);
+  background: var(--color-accent);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
   font-size: 1rem;
-  color: #111827;
+  color: var(--color-on-accent);
   text-decoration: none;
-  box-shadow:
-    0 0 0 1.5px rgba(248, 250, 252, 0.7),
-    0 10px 30px rgba(0, 0, 0, 0.8);
 }
 
 .header-title {
@@ -310,7 +318,7 @@ a {
 
 .header-title-sub {
   font-size: 0.76rem;
-  opacity: 0.8;
+  color: var(--color-text-muted);
 }
 
 .main-nav {
@@ -320,25 +328,25 @@ a {
 }
 
 .main-nav a {
-  color: #e5e7eb;
+  color: var(--color-text-muted);
   text-decoration: none;
   font-size: 0.9rem;
   padding: 0.35rem 0.7rem;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   transition:
     background var(--transition-fast),
-    color var(--transition-fast),
-    transform var(--transition-fast);
+    color var(--transition-fast);
 }
 
 .main-nav a:hover {
-  background: rgba(249, 250, 251, 0.12);
-  transform: translateY(-1px);
+  background: var(--color-hover);
+  color: var(--color-text);
 }
 
 .main-nav a.active {
-  background: rgba(249, 250, 251, 0.18);
-  color: #fef3c7;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-dark);
+  font-weight: 500;
 }
 
 .header-actions {
@@ -349,11 +357,11 @@ a {
 
 .header-link {
   font-size: 0.86rem;
-  color: #dbdbe3;
+  color: var(--color-text);
   text-decoration: none;
   padding: 0.25rem 0.7rem;
-  border-radius: 999px;
-  border: 1px solid rgba(249, 250, 251, 0.12);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
   transition:
     background var(--transition-fast),
     color var(--transition-fast),
@@ -365,8 +373,9 @@ a {
 
 .site-footer {
   margin-top: auto;
-  background: #0b0b0f;
-  color: #e5e7eb;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
   padding: 1.3rem 0 1.6rem;
   font-size: 0.85rem;
 }
@@ -384,7 +393,7 @@ a {
 }
 
 .footer-links a {
-  color: #d1d5db;
+  color: var(--color-text-muted);
   text-decoration: none;
 }
 
@@ -428,12 +437,13 @@ a {
 .card {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
   box-shadow: var(--shadow-card);
   padding: 1.1rem 1.2rem;
 }
 
 .card-soft {
-  background: var(--card-soft-bg);
+  background: var(--color-surface-soft);
 }
 
 /* Hotel card */
@@ -446,17 +456,14 @@ a {
   display: flex;
   flex-direction: column;
   transition:
-    transform var(--transition-normal),
     box-shadow var(--transition-normal),
-    border var(--transition-normal);
-  border: 1px solid transparent;
-  animation: fadeInUp 0.5s ease-out both;
+    border-color var(--transition-normal);
+  border: 1px solid var(--color-border);
 }
 
 .hotel-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
-  border-color: rgba(198, 166, 103, 0.6);
+  box-shadow: var(--shadow-soft);
+  border-color: var(--color-accent);
 }
 
 .hotel-card-image-wrapper {
@@ -470,11 +477,6 @@ a {
   height: 190px;
   object-fit: cover;
   display: block;
-  transition: transform 0.55s cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.hotel-card:hover .hotel-card-image {
-  transform: scale(1.06);
 }
 
 .hotel-card-badge {
@@ -487,9 +489,8 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  background: rgba(0, 0, 0, 0.72);
-  color: #f3f4f6;
-  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.6);
+  color: #ffffff;
 }
 
 .hotel-card-body {
@@ -497,6 +498,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  flex: 1; /* thân thẻ giãn hết chiều cao để giá + nút nằm cùng hàng giữa các thẻ */
 }
 
 .hotel-card-name {
@@ -510,13 +512,18 @@ a {
   margin: 0;
   font-size: 0.85rem;
   color: var(--color-text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .hotel-card-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 0.4rem;
+  margin-top: auto;
+  padding-top: 0.4rem;
   font-size: 0.85rem;
 }
 
@@ -610,14 +617,14 @@ main.page {
   font-weight: 600;
   white-space: nowrap;
 }
-.status-pending { background: #fef3c7; color: #92400e; }
+.status-pending { background: var(--status-pending-bg); color: var(--status-pending-fg); }
 .status-confirmed,
 .status-approved,
-.status-active { background: #dcfce7; color: #166534; }
+.status-active { background: var(--status-ok-bg); color: var(--status-ok-fg); }
 .status-cancelled,
 .status-rejected,
-.status-locked { background: #fee2e2; color: #991b1b; }
-.status-completed { background: #e0e7ff; color: #3730a3; }
+.status-locked { background: var(--status-bad-bg); color: var(--status-bad-fg); }
+.status-completed { background: var(--status-done-bg); color: var(--status-done-fg); }
 
 /* ===== Bảng dữ liệu (owner, admin) ===== */
 .data-table-wrap {
@@ -676,35 +683,31 @@ main.page {
 .toast {
   padding: 0.75rem 1rem;
   border-radius: var(--radius-md);
-  background: #111827;
-  color: #f9fafb;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
   font-size: 0.9rem;
   box-shadow: var(--shadow-soft);
   border-left: 4px solid var(--color-accent);
   animation: fadeInUp 0.25s ease-out;
   transition: opacity 0.35s, transform 0.35s;
 }
-.toast-success { border-left-color: #16a34a; }
+.toast-success { border-left-color: var(--color-success); }
 .toast-error { border-left-color: var(--color-danger); }
 .toast-hide { opacity: 0; transform: translateY(8px); }
 
 /* ===== Skeleton loading ===== */
 .skeleton {
-  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 37%, #e5e7eb 63%);
-  background-size: 400% 100%;
-  animation: skeleton-shimmer 1.3s ease infinite;
+  background: var(--color-border);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
   border-radius: var(--radius-sm);
 }
 .skeleton-image { height: 180px; border-radius: 0; }
 .skeleton-line { height: 0.9rem; margin-bottom: 0.6rem; }
 .skeleton-card { pointer-events: none; }
-body.dark-theme .skeleton {
-  background: linear-gradient(90deg, #1f2933 25%, #374151 37%, #1f2933 63%);
-  background-size: 400% 100%;
-}
-@keyframes skeleton-shimmer {
-  0% { background-position: 100% 50%; }
-  100% { background-position: 0 50%; }
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
 }
 
 /* ===== Trạng thái rỗng ===== */
@@ -730,10 +733,10 @@ body.dark-theme .skeleton {
   align-items: center;
   gap: 0.5rem;
   padding: 0.25rem 0.75rem 0.25rem 0.3rem;
-  border-radius: 999px;
-  border: 1px solid rgba(249, 250, 251, 0.18);
-  background: rgba(249, 250, 251, 0.06);
-  color: #f3f4f6;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
   font: inherit;
   font-size: 0.86rem;
   cursor: pointer;
@@ -743,8 +746,8 @@ body.dark-theme .skeleton {
 .user-menu-trigger:hover,
 .user-menu.open .user-menu-trigger,
 .user-menu:hover .user-menu-trigger {
-  background: rgba(249, 250, 251, 0.12);
-  border-color: rgba(212, 180, 117, 0.6);
+  background: var(--color-hover);
+  border-color: var(--color-accent);
 }
 
 .user-avatar {
@@ -754,8 +757,8 @@ body.dark-theme .skeleton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #fbbf24, #c6a667);
-  color: #111827;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
   font-weight: 700;
   font-size: 0.8rem;
 }

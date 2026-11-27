@@ -174,14 +174,19 @@
     container.innerHTML = "";
 
     hotels.forEach((hotel) => {
-      let cardHtml = tpl
-        .replace(/{{id}}/g, String(hotel.id))
-        .replace(/{{image}}/g, hotel.images && hotel.images[0] ? hotel.images[0] : "")
-        .replace(/{{name}}/g, hotel.name)
-        .replace(/{{location}}/g, hotel.location)
-        .replace(/{{rating}}/g, hotel.rating.toFixed(1))
-        .replace(/{{price}}/g, Utils.formatPrice(hotel.price))
-        .replace(/{{shortDescription}}/g, shortText(hotel.description, 80));
+      // Dữ liệu do owner nhập → luôn escape. Thay bằng callback để "$&", "$1"... trong tên không bị hiểu là mẫu.
+      const values = {
+        id: hotel.id,
+        image: hotel.images && hotel.images[0] ? hotel.images[0] : "",
+        name: hotel.name,
+        location: hotel.location || "",
+        rating: Number(hotel.rating || 0).toFixed(1),
+        price: Utils.formatPrice(Number(hotel.price)),
+        shortDescription: shortText(hotel.description, 80),
+      };
+      const cardHtml = tpl.replace(/{{(\w+)}}/g, (match, key) =>
+        key in values ? Utils.escapeHtml(values[key]) : match
+      );
 
       container.insertAdjacentHTML("beforeend", cardHtml);
     });

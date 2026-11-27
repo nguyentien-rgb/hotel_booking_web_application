@@ -29,11 +29,8 @@ const BOOKING_STATUS_LABEL = {
 let myHotels = [];
 let editingHotelId = null;
 
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.textContent = text == null ? "" : String(text);
-  return div.innerHTML;
-}
+// Escape dùng chung (escape cả dấu nháy để an toàn trong thuộc tính HTML)
+const escapeHtml = Utils.escapeHtml;
 
 function badge(status, labels) {
   return `<span class="status-badge status-${status}">${labels[status] || status}</span>`;
@@ -235,7 +232,7 @@ async function loadBookings(status) {
 
   try {
     const bookings = await Api.owner.bookings(status);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = Utils.todayIso(0); // giờ máy, không phải UTC
 
     if (!bookings.length) {
       body.innerHTML = '<tr><td colspan="7" class="text-muted">No bookings.</td></tr>';
@@ -249,8 +246,13 @@ async function loadBookings(status) {
           actions = `
             <button class="btn btn-gold btn-sm" data-action="confirm" data-id="${b.id}">Confirm</button>
             <button class="btn btn-danger btn-sm" data-action="reject" data-id="${b.id}">Reject</button>`;
-        } else if (b.status === "confirmed" && b.checkOut <= today) {
-          actions = `<button class="btn btn-outline btn-sm" data-action="complete" data-id="${b.id}">Mark completed</button>`;
+        } else if (b.status === "confirmed") {
+          // Huỷ được mọi lúc (khách không đến); hoàn thành chỉ từ ngày trả phòng
+          actions = `<button class="btn btn-danger btn-sm" data-action="cancel" data-id="${b.id}">Cancel</button>`;
+          if (b.checkOut <= today)
+            actions =
+              `<button class="btn btn-outline btn-sm" data-action="complete" data-id="${b.id}">Mark completed</button>` +
+              actions;
         }
 
         return `
@@ -276,13 +278,20 @@ async function loadBookings(status) {
 
 async function handleBookingAction(action, id) {
   if (action === "reject" && !confirm("Reject this booking?")) return;
+  if (action === "cancel" && !confirm("Cancel this confirmed booking? It will no longer count as revenue.")) return;
 
   try {
     if (action === "confirm") await Api.owner.confirmBooking(id);
     else if (action === "reject") await Api.owner.rejectBooking(id);
+    else if (action === "cancel") await Api.owner.cancelBooking(id);
     else if (action === "complete") await Api.owner.completeBooking(id);
 
-    const done = { confirm: "Booking confirmed.", reject: "Booking rejected.", complete: "Booking completed." };
+    const done = {
+      confirm: "Booking confirmed.",
+      reject: "Booking rejected.",
+      cancel: "Booking cancelled.",
+      complete: "Booking completed.",
+    };
     Utils.toast(done[action], "success");
     await loadBookings(document.getElementById("booking-filter").value);
   } catch (err) {

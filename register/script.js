@@ -65,6 +65,10 @@ function initRegisterPage() {
       }
     }
 
+    // Khoá nút trong lúc chờ để bấm đúp không tạo 2 tài khoản; thành công thì trang tự chuyển đi
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
+
     try {
       // POST /api/auth/register → { token, user } (đăng ký xong tự đăng nhập)
       const data = await Api.registerUser({ name, email, password, role, phone, businessName, taxCode });
@@ -74,6 +78,7 @@ function initRegisterPage() {
     } catch (err) {
       console.error("Register error:", err);
       errorEl.textContent = err.message || "Register failed.";
+      if (submitBtn) submitBtn.disabled = false;
     }
   });
 }

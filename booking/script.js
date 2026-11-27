@@ -8,12 +8,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 const MAX_GUESTS = 20;
+const MAX_NIGHTS = 30; // khớp với MaxNights ở BookingsController
 
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.textContent = text == null ? "" : String(text);
-  return div.innerHTML;
-}
+// Escape dùng chung (escape cả dấu nháy để an toàn trong thuộc tính HTML)
+const escapeHtml = Utils.escapeHtml;
 
 function addDays(iso, days) {
   const d = new Date(iso + "T00:00:00");
@@ -79,6 +77,7 @@ function setupForm(form, hotel) {
   checkIn.value = Utils.todayIso(1);
   checkOut.min = addDays(checkIn.value, 1);
   checkOut.value = addDays(checkIn.value, 1);
+  checkOut.max = addDays(checkIn.value, MAX_NIGHTS);
 
   function clampGuests() {
     let g = parseInt(guests.value, 10);
@@ -97,6 +96,11 @@ function setupForm(form, hotel) {
       summary.innerHTML = '<p class="text-muted">Select valid check-in and check-out dates.</p>';
       return;
     }
+    // Lịch đã chặn bằng max, nhưng người dùng vẫn gõ tay được ngày xa hơn
+    if (nights > MAX_NIGHTS) {
+      summary.innerHTML = `<p class="form-error">Maximum stay is ${MAX_NIGHTS} nights.</p>`;
+      return;
+    }
     const total = price * g * nights;
     summary.innerHTML = `
       <div class="price-line"><span>${Utils.formatPrice(price)} × ${g} guest(s) × ${nights} night(s)</span></div>
@@ -106,8 +110,11 @@ function setupForm(form, hotel) {
   checkIn.addEventListener("change", () => {
     if (!checkIn.value) return update();
     const minOut = addDays(checkIn.value, 1);
+    const maxOut = addDays(checkIn.value, MAX_NIGHTS);
     checkOut.min = minOut;
+    checkOut.max = maxOut;
     if (!checkOut.value || checkOut.value < minOut) checkOut.value = minOut;
+    if (checkOut.value > maxOut) checkOut.value = maxOut;
     update();
   });
   checkOut.addEventListener("change", update);
@@ -134,6 +141,10 @@ function setupForm(form, hotel) {
       Utils.toast("Please select valid check-in and check-out dates.", "error");
       return;
     }
+    if (nights > MAX_NIGHTS) {
+      Utils.toast(`Maximum stay is ${MAX_NIGHTS} nights.`, "error");
+      return;
+    }
     if (checkIn.value < today) {
       Utils.toast("Check-in date cannot be in the past.", "error");
       return;
@@ -152,7 +163,7 @@ function setupForm(form, hotel) {
       nights,
       total: price * g * nights,
     };
-    localStorage.setItem("booking_draft", JSON.stringify(draft));
+    Utils.saveBookingDraft(draft);
     Router.goToPayment();
   });
 
